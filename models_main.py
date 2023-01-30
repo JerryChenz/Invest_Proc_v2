@@ -21,7 +21,7 @@ def days_between(d1, d2):
 
 
 if __name__ == '__main__':
-    stare_list = ['6601.HK']
+    stare_list = ['0683.HK']
     for s in stare_list:
         gen_val_xlsx(s)
         # update_val_xlsx(s)

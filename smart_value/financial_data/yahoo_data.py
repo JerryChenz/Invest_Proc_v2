@@ -14,8 +14,9 @@ class Financials:
         except KeyError:
             print("Check your stock ticker")
         self.name = self.stock_data.info['shortName']
-        self.price = [self.stock_data.info['currentPrice'], self.stock_data.info['currency']]
-        self.exchange = self.stock_data.info['exchange']
+        self.sector = self.stock_data.info['sector']
+        self.price = [self.stock_data.fast_info['last_price'], self.stock_data.fast_info['currency']]
+        self.exchange = self.stock_data.fast_info['exchange']
         self.shares = self.stock_data.info['sharesOutstanding']
         self.report_currency = self.stock_data.info['financialCurrency']
         self.avg_gross_margin = None
@@ -140,8 +141,9 @@ class Financials:
 
         cash_flow = self.stock_data.get_cashflow()
         # Start of Cleaning: make sure the data has all the required indexes
-        dummy = {"Dummy": [None]}
-        cf_index = ['CommonStockDividendPaid', 'RepurchaseOfCapitalStock']
+        dummy = {"Dummy": [None, None, None, None, None]}
+        cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow', 'CommonStockDividendPaid',
+                    'RepurchaseOfCapitalStock']
         dummy_df = pd.DataFrame(dummy, index=cf_index)
         clean_cf = dummy_df.join(cash_flow)
         cf_df = clean_cf.loc[cf_index]

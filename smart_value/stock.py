@@ -14,6 +14,7 @@ class Stock(Asset):
         """
         super().__init__(asset_code)
 
+        self.sector = None
         self.invest_horizon = 3  # 3 years holding period for stock by default
         self.report_currency = None
         self.annual_bs = None  # annual balance sheet data
@@ -46,6 +47,7 @@ class Stock(Asset):
         ticker_data = yf.Financials(self.asset_code)
 
         self.name = ticker_data.name
+        self.sector = ticker_data.sector
         self.price = ticker_data.price
         self.exchange = ticker_data.exchange
         self.shares = ticker_data.shares
@@ -93,15 +95,19 @@ class Stock(Asset):
         # ticker and dividend
         stock_summary.insert(loc=0, column='Ticker', value=self.asset_code)
         stock_summary.insert(loc=1, column='Name', value=self.name)
-        stock_summary.insert(loc=2, column='Exchange', value=self.exchange)
-        stock_summary.insert(loc=3, column='Price', value=self.price[0])
-        stock_summary.insert(loc=4, column='Price_currency', value=self.price[1])
-        stock_summary.insert(loc=5, column='Shares', value=self.shares)
-        stock_summary.insert(loc=6, column='Reporting_Currency', value=self.report_currency)
-        stock_summary.insert(loc=7, column='Fx_rate', value=self.fx_rate)
-        stock_summary.insert(loc=8, column='Dividend', value=self.periodic_payment)
-        stock_summary.insert(loc=9, column='Buyback', value=self.buyback)
-        stock_summary.insert(loc=10, column='Last_fy', value=self.last_fy)
+        stock_summary.insert(loc=2, column='Sector', value=self.sector)
+        stock_summary.insert(loc=3, column='Exchange', value=self.exchange)
+        stock_summary.insert(loc=4, column='Price', value=self.price[0])
+        stock_summary.insert(loc=5, column='Price_currency', value=self.price[1])
+        stock_summary.insert(loc=6, column='Shares', value=self.shares)
+        stock_summary.insert(loc=7, column='Reporting_Currency', value=self.report_currency)
+        stock_summary.insert(loc=8, column='Fx_rate', value=self.fx_rate)
+        stock_summary.insert(loc=9, column='Dividend', value=self.periodic_payment)
+        stock_summary.insert(loc=10, column='Buyback', value=self.buyback)
+        stock_summary.insert(loc=11, column='Last_fy', value=self.last_fy)
+        stock_summary['CFO'] = self.cf_df.loc['OperatingCashFlow']
+        stock_summary['CFI'] = self.cf_df.loc['InvestingCashFlow']
+        stock_summary['CFF'] = self.cf_df.loc['FinancingCashFlow']
         stock_summary['Avg_Gross_margin'] = self.avg_gross_margin
         stock_summary['Avg_sales_growth'] = self.avg_sales_growth
         stock_summary['Avg_ebit_margin'] = self.avg_ebit_margin

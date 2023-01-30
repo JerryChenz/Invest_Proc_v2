@@ -4,6 +4,7 @@ import pathlib
 import re
 import smart_value.stock
 import smart_value.tools.stock_model
+import smart_value.financial_data.riskfree_rate
 
 
 def read_opportunity(opportunities_path):
@@ -59,6 +60,8 @@ class Monitor:
     def __init__(self):
         self.opportunities = []
         self.load_opportunities()
+        self.us_riskfree = smart_value.financial_data.riskfree_rate.risk_free_rate("us")
+        self.cn_riskfree = smart_value.financial_data.riskfree_rate.risk_free_rate("cn")
 
     # Todo: Analysis using Pandas
 
@@ -104,6 +107,7 @@ class Monitor:
             pipline_book = app.books.open(monitor_file_path)
             self.update_opportunities(pipline_book)
             self.update_holdings(pipline_book)
+            self.update_market(pipline_book)
             pipline_book.save(monitor_file_path)
             pipline_book.close()
 
@@ -158,3 +162,13 @@ class Monitor:
 
         # Current Holdings
         holding_sheet.range('I2').value = datetime.today().strftime('%Y-%m-%d')
+
+    def update_market(self, pipline_book):
+        """Update the Current_Holdings sheet in the Pipeline_monitor file.
+
+        :param pipline_book: xlwings book object
+        """
+
+        market_sheet = pipline_book.sheets('Market')
+
+        market_sheet.range('D3').value = self.us_riskfree
