@@ -37,7 +37,7 @@ class Financials:
             self.next_earnings = pd.to_datetime(datetime.fromtimestamp(self.stock_data.info['mostRecentQuarter'])
                                             .strftime("%Y-%m-%d")) + pd.DateOffset(months=6)
         try:
-            self.dividends = -int(self.cash_flow.loc['CommonStockDividendPaid'][0]) / self.shares
+            self.dividends = -int(self.cash_flow.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
             self.dividends = 0
         try:
@@ -142,7 +142,7 @@ class Financials:
         cash_flow = self.stock_data.get_cashflow()
         # Start of Cleaning: make sure the data has all the required indexes
         dummy = {"Dummy": [None, None, None, None, None]}
-        cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow', 'CommonStockDividendPaid',
+        cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow', 'CashDividendsPaid',
                     'RepurchaseOfCapitalStock']
         dummy_df = pd.DataFrame(dummy, index=cf_index)
         clean_cf = dummy_df.join(cash_flow)
