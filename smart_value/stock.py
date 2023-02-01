@@ -107,6 +107,7 @@ class Stock(Asset):
         stock_summary['CFO'] = self.cf_df.loc['OperatingCashFlow']
         stock_summary['CFI'] = self.cf_df.loc['InvestingCashFlow']
         stock_summary['CFF'] = self.cf_df.loc['FinancingCashFlow']
+        stock_summary['EndCashPosition'] = self.cf_df.loc['EndCashPosition']
         stock_summary['Avg_Gross_margin'] = self.avg_gross_margin
         stock_summary['Avg_sales_growth'] = self.avg_sales_growth
         stock_summary['Avg_ebit_margin'] = self.avg_ebit_margin

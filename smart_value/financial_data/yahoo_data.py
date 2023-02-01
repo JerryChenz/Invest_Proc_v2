@@ -30,6 +30,7 @@ class Financials:
         self.quarter_bs = self.get_balance_sheet("quarter")
         self.income_statement = self.get_income_statement()
         self.cash_flow = self.get_cash_flow()
+        self.end_cash = self.stock_data.get_cashflow("quarter").loc['EndCashPosition'][0]
         if self.stock_data.info['mostRecentQuarter'] is None:
             self.next_earnings = pd.to_datetime(datetime.fromtimestamp(self.stock_data.info['nextFiscalYearEnd'])
                                                 .strftime("%Y-%m-%d")) - pd.DateOffset(months=6)
@@ -142,8 +143,8 @@ class Financials:
         cash_flow = self.stock_data.get_cashflow()
         # Start of Cleaning: make sure the data has all the required indexes
         dummy = {"Dummy": [None, None, None, None, None]}
-        cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow', 'CashDividendsPaid',
-                    'RepurchaseOfCapitalStock']
+        cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow',
+                    'CashDividendsPaid', 'RepurchaseOfCapitalStock']
         dummy_df = pd.DataFrame(dummy, index=cf_index)
         clean_cf = dummy_df.join(cash_flow)
         cf_df = clean_cf.loc[cf_index]
