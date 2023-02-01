@@ -85,6 +85,7 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
         dash_sheet.range('C4').value = stock.name
         dash_sheet.range('C5').value = datetime.today().strftime('%Y-%m-%d')
         dash_sheet.range('I3').value = stock.exchange
+        dash_sheet.range('I5').value = stock.shares
         dash_sheet.range('I11').value = stock.report_currency
 
     if pd.to_datetime(dash_sheet.range('C5').value) > pd.to_datetime(dash_sheet.range('C6').value):
@@ -93,7 +94,6 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
         stock.is_updated = True
     dash_sheet.range('I4').value = stock.price[0]
     dash_sheet.range('J4').value = stock.price[1]
-    dash_sheet.range('I5').value = stock.shares
     dash_sheet.range('I12').value = stock.fx_rate
 
 

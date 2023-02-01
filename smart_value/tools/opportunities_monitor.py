@@ -44,13 +44,13 @@ def read_stock(dash_sheet):
     company.exchange = dash_sheet.range('I3').value
     company.price = dash_sheet.range('I4').value
     company.price_currency = dash_sheet.range('J4').value
-    company.ideal_price = dash_sheet.range('B19').value
-    company.current_irr = dash_sheet.range('G17').value
-    company.risk_premium = dash_sheet.range('H17').value
-    company.is_updated = dash_sheet.range('E6').value
-    company.periodic_payment = dash_sheet.range('I13').value
-    company.last_fy = dash_sheet.range('C6').value
-    company.invest_horizon = 3  # default 3 years holding period for stocks
+    company.excess_return = dash_sheet.range('I16').value
+    company.fcf_value = dash_sheet.range('B17').value
+    company.ideal_price = dash_sheet.range('B18').value
+    company.realizable_value = dash_sheet.range('C21').value
+    company.nonop_assets = dash_sheet.range('G21').value
+    company.periodic_payment = dash_sheet.range('C7').value
+    company.next_result = dash_sheet.range('C6').value
     return company
 
 
@@ -106,8 +106,8 @@ class Monitor:
         with xlwings.App(visible=False) as app:
             pipline_book = app.books.open(monitor_file_path)
             self.update_opportunities(pipline_book)
-            self.update_holdings(pipline_book)
-            self.update_market(pipline_book)
+            # self.update_holdings(pipline_book)
+            # self.update_market(pipline_book)
             pipline_book.save(monitor_file_path)
             pipline_book.close()
 
@@ -126,15 +126,15 @@ class Monitor:
             monitor_sheet.range((r, 3)).value = a.name
             monitor_sheet.range((r, 4)).value = a.exchange
             monitor_sheet.range((r, 5)).value = a.price
-            monitor_sheet.range((r, 6)).value = a.current_irr
-            monitor_sheet.range((r, 7)).value = a.risk_premium
-            monitor_sheet.range((r, 8)).value = f'=F{r}-G{r}'
-            monitor_sheet.range((r, 9)).value = a.periodic_payment
-            monitor_sheet.range((r, 10)).value = f'=I{r}/E{r}'
-            monitor_sheet.range((r, 11)).value = a.ideal_price
-            monitor_sheet.range((r, 12)).value = a.last_fy
-            monitor_sheet.range((r, 13)).value = a.invest_horizon
-            monitor_sheet.range((r, 14)).value = a.is_updated
+            monitor_sheet.range((r, 6)).value = a.price_currency
+            monitor_sheet.range((r, 7)).value = a.excess_return
+            monitor_sheet.range((r, 8)).value = a.ideal_price
+            monitor_sheet.range((r, 9)).value = a.fcf_value
+            monitor_sheet.range((r, 10)).value = a.realizable_value
+            monitor_sheet.range((r, 11)).value = a.nonop_assets
+            monitor_sheet.range((r, 12)).value = a.periodic_payment
+            monitor_sheet.range((r, 13)).value = f'=L{r}/E{r}'
+            monitor_sheet.range((r, 14)).value = a.next_result
             r += 1
 
     def update_holdings(self, pipline_book):

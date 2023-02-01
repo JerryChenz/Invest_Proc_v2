@@ -15,7 +15,6 @@ class Stock(Asset):
         super().__init__(asset_code)
 
         self.sector = None
-        self.invest_horizon = 3  # 3 years holding period for stock by default
         self.report_currency = None
         self.annual_bs = None  # annual balance sheet data
         self.quarter_bs = None  # last quarter balance sheet data
