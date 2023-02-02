@@ -30,7 +30,6 @@ class Financials:
         self.quarter_bs = self.get_balance_sheet("quarter")
         self.income_statement = self.get_income_statement()
         self.cash_flow = self.get_cash_flow()
-        self.end_cash = self.stock_data.get_cashflow("quarter").loc['EndCashPosition'][0]
         if self.stock_data.info['mostRecentQuarter'] is None:
             self.next_earnings = pd.to_datetime(datetime.fromtimestamp(self.stock_data.info['nextFiscalYearEnd'])
                                                 .strftime("%Y-%m-%d")) - pd.DateOffset(months=6)
