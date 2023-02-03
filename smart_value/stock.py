@@ -1,5 +1,6 @@
 from smart_value.asset import *
 from smart_value.financial_data import yahoo_data as yf
+from smart_value.financial_data import yfin_data as yfin
 from smart_value.financial_data import exchange_rate as fx
 import pandas as pd
 
@@ -37,6 +38,8 @@ class Stock(Asset):
 
         if self.source == "yf":
             self.load_from_yf()
+        elif self.source == "yfin":
+            self.load_from_yfin()
         else:
             pass  # Other sources of data to-be-implemented
 
@@ -66,6 +69,17 @@ class Stock(Asset):
         self.avg_ni_growth = ticker_data.avg_ni_growth
         self.years_of_data = ticker_data.years_of_data
         self.last_fy = ticker_data.annual_bs.columns[0]
+
+    def load_from_yfin(self):
+        """Scrap the financial_data from yfinance API"""
+
+        update_info = yfin.market_info(self.asset_code)
+        market_price = update_info[0]
+        price_currency = update_info[1]
+        report_currency = update_info[2]
+
+        self.price = [market_price, price_currency]
+        self.fx_rate = fx.get_forex_rate(report_currency, price_currency)
 
     def current_summary(self):
         """Return a summary of all the key stock data.

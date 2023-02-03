@@ -22,7 +22,7 @@ def read_opportunity(opportunities_path):
         dash_sheet = xl_book.sheets('Dashboard')
         # Update the models first in the opportunities folder
         if r_stock.match(str(opportunities_path)):
-            company = smart_value.stock.Stock(dash_sheet.range('C3').value, "yf")
+            company = smart_value.stock.Stock(dash_sheet.range('C3').value, "yfin")
             smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
             xl_book.save(opportunities_path)  # xls must be saved to update the values
             opportunity = read_stock(dash_sheet)
@@ -134,8 +134,8 @@ class Monitor:
             monitor_sheet.range((r, 10)).value = a.excess_return
             monitor_sheet.range((r, 11)).value = a.ideal_price
             monitor_sheet.range((r, 12)).value = a.fcf_value
-            monitor_sheet.range((r, 13)).value = a.navps
-            monitor_sheet.range((r, 14)).value = a.realizable_value
+            monitor_sheet.range((r, 13)).value = a.realizable_value
+            monitor_sheet.range((r, 14)).value = a.navps
             monitor_sheet.range((r, 15)).value = a.periodic_payment
             monitor_sheet.range((r, 16)).value = a.next_result
             r += 1
@@ -147,7 +147,7 @@ class Monitor:
         """
 
         holding_sheet = pipline_book.sheets('Current_Holdings')
-        holding_sheet.range('B7:J200').clear_contents()
+        holding_sheet.range('B7:O200').clear_contents()
 
         k = 7
         for a in self.opportunities:
