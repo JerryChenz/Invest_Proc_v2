@@ -40,7 +40,7 @@ def download_yf(symbols):
         # info['exchange'] = companies.tickers[symbol].fast_info['exchange']  # Use market instead
         info['ticker'] = symbol
         info['download_date'] = datetime.today().strftime('%Y-%m-%d')
-        info.to_json(json_dir / f'{symbol}_intro_d ata.json')
+        info.to_json(json_dir / f'{symbol}_intro_data.json')
         # Balance Sheet
         companies.tickers[symbol].quarterly_balance_sheet.to_json(json_dir / f'{symbol}_bs_data.json')
         # Income statement
@@ -56,10 +56,8 @@ def prepare_screener(symbols):
     :param symbols: String symbols separated by a space
     """
 
-    intro_col = []
-    bs_col = []
-    is_col = []
-    cf_col = []
-    screener.collect_files(symbols, intro_col, bs_col, is_col, cf_col)
+    intro_col = ['ticker', 'shortName', 'sector', 'industry', 'market', 'sharesOutstanding', 'financialCurrency',
+                 'lastFiscalYearEnd', 'mostRecentQuarter']
+    screener.collect_files(symbols, intro_col)
 
 

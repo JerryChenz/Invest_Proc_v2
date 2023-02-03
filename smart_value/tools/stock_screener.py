@@ -16,7 +16,7 @@ json_dir = screener_folder / 'data'
 
 
 # Step 1: Collect files
-def collect_files(symbols, intro_col, bs_col, is_col, cf_col):
+def collect_files(symbols, intro_col):
     """Find and read the 4 jsons of a company, then export to a screener_data csv
 
     :param intro_col: List with intro column names
@@ -35,7 +35,7 @@ def collect_files(symbols, intro_col, bs_col, is_col, cf_col):
         symbol = symbol_list.pop(0)  # pop from the beginning
 
         try:
-            stock_df = read_company_json(symbol, intro_col, bs_col, is_col, cf_col)
+            stock_df = read_company_json(symbol, intro_col)
             screener_dfs.append(stock_df.transpose())  # a single row
         except RuntimeError:
             print(f"{symbol} Data Incomplete. Skip. {len(symbol_list)} stocks left to prepare...")
@@ -45,7 +45,7 @@ def collect_files(symbols, intro_col, bs_col, is_col, cf_col):
     df.to_csv(screener_folder / 'screener_data.csv')
 
 
-def read_company_json(symbol, intro_col, bs_col, is_col, cf_col):
+def read_company_json(symbol, intro_col):
     """ read the 4 jsons of a company
 
     :param intro_col: List with intro column names
@@ -68,13 +68,22 @@ def read_company_json(symbol, intro_col, bs_col, is_col, cf_col):
         is_df = pd.read_json(this_is)
         # Annual Cash flor statement
         cf_df = pd.read_json(this_cf)
-        return pd.concat([intro_df.loc[intro_col], bs_df.iloc[:, :1].loc[bs_col],
-                         format_annual(is_df, is_col), format_annual(cf_df, cf_col)])
+        return pd.concat([intro_df.loc[intro_col], format_quarter(bs_df), format_annual(is_df), format_annual(cf_df)])
     else:
         raise RuntimeError(f"{symbol} Data Incomplete.")
 
 
-def format_annual(df, col):
+def format_quarter(df):
+    col = df.index.values.tolist()
+    first = df.iloc[:, :1]
+    first.columns = [0]
+    second = df.iloc[:, 1:2]
+    second.index = [s + "_-1" for s in col]
+    second.columns = [0]
+    return pd.concat([second, first])
+
+
+def format_annual(df):
     """ Return the formatted one row annual statement dataframe.
 
     :param df: Dataframe
@@ -82,16 +91,16 @@ def format_annual(df, col):
     :return: formatted Dataframe
     """
 
-    first = df.iloc[:, :1].loc[col]
+    col = df.index.values.tolist()
+    first = df.iloc[:, :1]
     first.columns = [0]
-    second = df.iloc[:, 1:2].loc[col]
+    second = df.iloc[:, 1:2]
     second.columns = [0]
     second.index = [s + "_-1" for s in col]
-    third = df.iloc[:, 2:3].loc[col]
+    third = df.iloc[:, 2:3]
     third.columns = [0]
     third.index = [s + "_-2" for s in col]
 
     return pd.concat([third, second, first])
-
 
 # Step 2: filter done using ipynb with Jupyter Notebook
