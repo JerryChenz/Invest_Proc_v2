@@ -4,7 +4,6 @@ from yfinance import Ticker
 import smart_value.stock as stock
 
 
-
 class Financials:
     """Retrieves the data from YH Finance API and yfinance package"""
 
@@ -37,7 +36,7 @@ class Financials:
                                                 .strftime("%Y-%m-%d")) - pd.DateOffset(months=6)
         else:
             self.next_earnings = pd.to_datetime(datetime.fromtimestamp(self.stock_data.info['mostRecentQuarter'])
-                                            .strftime("%Y-%m-%d")) + pd.DateOffset(months=6)
+                                                .strftime("%Y-%m-%d")) + pd.DateOffset(months=6)
         try:
             self.dividends = -int(self.cash_flow.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
@@ -64,14 +63,14 @@ class Financials:
             balance_sheet = self.stock_data.quarterly_balance_sheet
             # Quarter balance sheet index is different from annual bs
             bs_index = ['Total Assets', 'Current Assets', 'Current Liabilities',
-                      'Current Debt And Capital Lease Obligation',
-                      'Current Capital Lease Obligation',
-                      'Long Term Debt And Capital Lease Obligation',
-                      'Long Term Capital Lease Obligation',
-                      'Total Equity Gross Minority Interest',
-                      'MinorityInterest', 'Cash And Cash Equivalents',
-                      'Other Short Term Investments', 'Investment Properties',
-                      'Long Term Equity Investment', 'Investmentin Financial Assets', 'Net PPE']
+                        'Current Debt And Capital Lease Obligation',
+                        'Current Capital Lease Obligation',
+                        'Long Term Debt And Capital Lease Obligation',
+                        'Long Term Capital Lease Obligation',
+                        'Total Equity Gross Minority Interest',
+                        'MinorityInterest', 'Cash And Cash Equivalents',
+                        'Other Short Term Investments', 'Investment Properties',
+                        'Long Term Equity Investment', 'Investmentin Financial Assets', 'Net PPE']
         # Start of Cleaning: make sure the data has all the required indexes
         dummy_df = pd.DataFrame(dummy, index=bs_index)
         clean_bs = dummy_df.join(balance_sheet)

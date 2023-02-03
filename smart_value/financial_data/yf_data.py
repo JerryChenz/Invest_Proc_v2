@@ -18,6 +18,9 @@ cwd = pathlib.Path.cwd().resolve()
 screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
 json_dir = screener_folder / 'data'
 
+info_col = ['ticker', 'shortName', 'sector', 'industry', 'market', 'sharesOutstanding', 'financialCurrency',
+            'lastFiscalYearEnd', 'mostRecentQuarter']
+
 
 def download_yf(symbols):
     """
@@ -40,13 +43,14 @@ def download_yf(symbols):
         # info['exchange'] = companies.tickers[symbol].fast_info['exchange']  # Use market instead
         info['ticker'] = symbol
         info['download_date'] = datetime.today().strftime('%Y-%m-%d')
-        info.to_json(json_dir / f'{symbol}_intro_data.json')
         # Balance Sheet
-        companies.tickers[symbol].quarterly_balance_sheet.to_json(json_dir / f'{symbol}_bs_data.json')
+        bs_df = companies.tickers[symbol].quarterly_balance_sheet
         # Income statement
-        companies.tickers[symbol].financials.to_json(json_dir / f'{symbol}_is_data.json')
+        is_df = companies.tickers[symbol].financials
         # Cash Flow statement
-        companies.tickers[symbol].cashflow.to_json(json_dir / f'{symbol}_cf_data.json')
+        cf_df = companies.tickers[symbol].cashflow
+        stock_df = pd.concat([info.loc[info_col], format_quarter(bs_df), format_annual(is_df), format_annual(cf_df)])
+        stock_df.to_json(json_dir / f"{symbol}_data.json")
         print(f"{symbol} exported, {len(symbol_list)} stocks left...")
 
 
@@ -56,8 +60,33 @@ def prepare_screener(symbols):
     :param symbols: String symbols separated by a space
     """
 
-    intro_col = ['ticker', 'shortName', 'sector', 'industry', 'market', 'sharesOutstanding', 'financialCurrency',
-                 'lastFiscalYearEnd', 'mostRecentQuarter']
-    screener.collect_files(symbols, intro_col)
+    screener.collect_files(symbols)
 
 
+def format_quarter(df):
+    col = df.index.values.tolist()
+    first = df.iloc[:, :1]
+    first.columns = [0]
+    second = df.iloc[:, 1:2]
+    second.index = [s + "_-1" for s in col]
+    second.columns = [0]
+    return pd.concat([second, first])
+
+
+def format_annual(df):
+    """ Return the formatted one row annual statement dataframe.
+
+    :param df: Dataframe
+    :param col: List with annual statement column names
+    :return: formatted Dataframe
+    """
+
+    col = df.index.values.tolist()
+    first = df.iloc[:, :1]
+    first.columns = [0]
+    second = df.iloc[:, 1:2]
+    second.columns = [0]
+    second.index = [s + "_-1" for s in col]
+    third = df.iloc[:, 2:3]
+    third.columns = [0]
+    third.index = [s + "_-2" for s in col]
