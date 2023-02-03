@@ -1,4 +1,4 @@
-import smart_value.stock
+import smart_value.stock as stock
 import pandas as pd
 import pathlib
 import time
@@ -14,99 +14,38 @@ cwd = pathlib.Path.cwd().resolve()
 screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
 json_dir = screener_folder / 'data'
 
+# Step 1: Collect files
+def collect_files(symbol):
+    """Collect a list of company files, then export json.
 
-# Step 1: Collect data
-def collect_data(tickers, source):
-    """Collect a list of company data, then export json.
-
-    :param tickers: a list of tickers to screen through
-    :param source: "yf" chooses yahoo finance
-    :return failed_list
+    :param symbol: String symbol
+    :return a list of pandas
     """
 
-    failed_list = []
-
-    # Collect the company data and export in json
-    while tickers:
-        ticker = tickers.pop()
-        try:
-            no_error = company_data(ticker, source, 0)
-            if no_error or no_error is None:
-
-                print(ticker + ' data added.')
-            else:
-                failed_list.append(ticker)
-                print(f"failed list: {failed_list}")
-        except KeyError:
-            print(f'{ticker} is not valid, skip')
-            continue
-    # export the json files and export the summary in DataFrame
-    print("merging data...")
-    merge_data()
-    print("csv exported.")
-    return failed_list
-
-
-def company_data(ticker, source, attempt):
-    """Collect the company data, then export json.
-
-    :param attempt: try_count
-    :param ticker: collect the data using string ticker
-    :param source: "yf" chooses yahoo finance
-    :return False if the call failed, True otherwise
-    """
-
-    # external API error re-try
-    max_try = 3
-
-    try:
-        company = smart_value.stock.Stock(ticker, source)
-        # export the summary
-        new_row = company.current_summary().transpose()
-        new_row.to_json(json_dir / f'{ticker} data.json')
-        time.sleep(3)
-    except IndexError:
-        attempt += 1
-        if attempt <= max_try:
-            print(f'external API error, will re-try {ticker} after 80 sec')
-            time.sleep(80)
-            print(f're-try {ticker}, attempt {attempt}')
-            company_data(ticker, source, attempt)
-        else:
-            print(f'external API error, {ticker} failed after {attempt} attempts')
-            return False
-    except ValueError:
-        attempt += 1
-        if attempt <= max_try:
-            print(f'external API error, will re-try {ticker} after 120 sec')
-            time.sleep(120)
-            print(f're-try {ticker}, attempt {attempt}')
-            company_data(ticker, source, attempt)
-        else:
-            print(f'external API error, {ticker} failed after {attempt} attempts')
-            return False
-    except TypeError:
-        attempt += 1
-        if attempt <= max_try:
-            print(f'external API error, will re-try {ticker} after 120 sec')
-            time.sleep(120)
-            print(f're-try {ticker}, attempt {attempt}')
-            company_data(ticker, source, attempt)
-        else:
-            print(f'external API error, {ticker} failed after {attempt} attempts')
-            return False
-    except AttributeError:
-        attempt += 1
-        if attempt <= max_try:
-            print(f'external API error, will re-try {ticker} after 120 sec')
-            time.sleep(120)
-            print(f're-try {ticker}, attempt {attempt}')
-            company_data(ticker, source, attempt)
-        else:
-            print(f'external API error, {ticker} failed after {attempt} attempts')
-            return False
+    this_intro = json_dir / f'{symbol}_intro_data.json'
+    this_bs = json_dir / f'{symbol}_bs_data.json'
+    this_is = json_dir / f'{symbol}_is_data.json'
+    this_cf = json_dir / f'{symbol}_cf_data.json'
+    if this_intro.is_file() and this_bs.is_file() and this_is.is_file() and this_cf.is_file():
+        intro_df = pd.read_json(this_intro)
+        # Quarterly Balance sheet statement
+        bs_df = pd.read_json(this_bs)
+        # Annual Income statement
+        is_df = pd.read_json(this_is)
+        # Annual Cash flor statement
+        cf_df = pd.read_json(this_cf)
+        return [intro_df, bs_df, is_df, cf_df]
     else:
-        return True
+        raise RuntimeError(f"{symbol} Data Incomplete.")
+
+def company_data(ticker, source):
+    """Return the Dataframe of a company's data.
+
+    :param ticker: collect the data using string ticker
+    :return Dataframe
+    """
+
+
 
 
 def merge_data():

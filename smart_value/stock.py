@@ -4,11 +4,13 @@ from smart_value.financial_data import yfin_data as yfin
 from smart_value.financial_data import exchange_rate as fx
 import pandas as pd
 
+# The stock summary should follow this format
+standardized_summary = []
 
 class Stock(Asset):
     """a type of Securities"""
 
-    def __init__(self, asset_code, source="yf"):
+    def __init__(self, asset_code, source=""):
         """
         :param asset_code: string ticker of the stock
         :param source: data source selector. "yf" selects yahoo finance
