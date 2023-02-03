@@ -47,6 +47,7 @@ def read_stock(dash_sheet):
     company.excess_return = dash_sheet.range('I16').value
     company.fcf_value = dash_sheet.range('B17').value
     company.ideal_price = dash_sheet.range('B18').value
+    company.navps = dash_sheet.range('G14').value
     company.realizable_value = dash_sheet.range('D14').value
     company.nonop_assets = dash_sheet.range('F21').value
     company.periodic_payment = dash_sheet.range('C7').value
@@ -124,18 +125,19 @@ class Monitor:
         for a in self.opportunities:
             monitor_sheet.range((r, 2)).value = a.asset_code
             monitor_sheet.range((r, 3)).value = a.name
-            monitor_sheet.range((r, 4)).value = a.exchange
-            monitor_sheet.range((r, 5)).value = a.price
-            monitor_sheet.range((r, 6)).value = a.price_currency
-            monitor_sheet.range((r, 7)).value = f'=E{r}-H{r}'
-            monitor_sheet.range((r, 8)).value = a.nonop_assets
-            monitor_sheet.range((r, 9)).value = a.excess_return
-            monitor_sheet.range((r, 10)).value = a.ideal_price
-            monitor_sheet.range((r, 11)).value = a.fcf_value
-            monitor_sheet.range((r, 12)).value = a.realizable_value
-            monitor_sheet.range((r, 13)).value = a.periodic_payment
-            monitor_sheet.range((r, 14)).value = f'=M{r}/E{r}'
-            monitor_sheet.range((r, 15)).value = a.next_result
+            monitor_sheet.range((r, 4)).value = a.sector
+            monitor_sheet.range((r, 5)).value = a.exchange
+            monitor_sheet.range((r, 6)).value = a.price
+            monitor_sheet.range((r, 7)).value = a.price_currency
+            monitor_sheet.range((r, 8)).value = f'=F{r}-I{r}'
+            monitor_sheet.range((r, 9)).value = a.nonop_assets
+            monitor_sheet.range((r, 10)).value = a.excess_return
+            monitor_sheet.range((r, 11)).value = a.ideal_price
+            monitor_sheet.range((r, 12)).value = a.fcf_value
+            monitor_sheet.range((r, 13)).value = a.navps
+            monitor_sheet.range((r, 14)).value = a.realizable_value
+            monitor_sheet.range((r, 15)).value = a.periodic_payment
+            monitor_sheet.range((r, 16)).value = a.next_result
             r += 1
 
     def update_holdings(self, pipline_book):

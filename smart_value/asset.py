@@ -12,6 +12,7 @@ class Asset:
         self.excess_return = None
         self.ideal_price = None
         self.fcf_value = None
+        self.navps = None
         self.realizable_value = None
         self.nonop_assets = None
         self.periodic_payment = None  # dividend for stocks and coupon for bonds
