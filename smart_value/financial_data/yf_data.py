@@ -37,7 +37,7 @@ def get_yf_data(symbols):
     full_list = symbols.split(" ")
     while full_list:
         pop_num = 3
-        n = random.randint(pop_num*5, pop_num*20)
+        n = random.randint(pop_num*5, pop_num*30)
         # select the first few items
         selected_list = full_list[:pop_num]
         # del the first few items

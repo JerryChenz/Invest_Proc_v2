@@ -1,4 +1,4 @@
-Invest_Proc
+Invest_Proc_Open
 =========================
 Public equity Investment Management tool for potential opportunities and current holdings.
 
@@ -13,10 +13,11 @@ Summary
 ![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_7.png)
 ![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_8.png)
 ![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_9.png)
+![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_10.png)
 
 Workflow
 =========================
-![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Investment_Analysis_Workflow.jpg)
+![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Investment_Analysis_Workflow.PNG)
 
 Data sources
 =========================
