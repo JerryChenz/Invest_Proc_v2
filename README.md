@@ -22,7 +22,7 @@ Workflow
 Data sources
 =========================
 - Yahoo finance (yfinance)
-- SEC API (WIP)
+- FMP API (WIP)
 - Bloomberg API (WIP)
 - Wind (WIP)
 
