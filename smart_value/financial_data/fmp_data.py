@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Get fundamental data
-@author: Adam Getbags
 Data provided by Financial Modeling Prep
 https://site.financialmodelingprep.com/developer/docs/
 Python API wrapper by

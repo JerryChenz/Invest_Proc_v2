@@ -42,6 +42,8 @@ class Stock(Asset):
             self.load_from_yf()
         elif self.source == "yfin":
             self.load_from_yfin()
+        elif self.source == "fmp":
+            self.load_from_fmp()
         else:
             pass  # Other sources of data to-be-implemented
 
@@ -82,6 +84,12 @@ class Stock(Asset):
 
         self.price = [market_price, price_currency]
         self.fx_rate = fx.get_forex_rate(report_currency, price_currency)
+
+    def load_from_fmp(self):
+        """Scrap the financial_data from FMP API"""
+
+        pass
+
 
     def current_summary(self):
         """Return a summary of all the key stock data.
