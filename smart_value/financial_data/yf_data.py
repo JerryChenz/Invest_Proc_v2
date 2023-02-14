@@ -117,7 +117,6 @@ def format_data(df):
     """ Return the formatted one row annual statement dataframe.
 
     :param df: Dataframe
-    :param col: List with annual statement column names
     :return: formatted Dataframe
     """
 
