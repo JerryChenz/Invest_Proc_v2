@@ -8,6 +8,8 @@ import smart_value.financial_data.yf_data as yf_data
 Two ways to create a screener:
 1. Create a filter while gathering the data.
 2. Collect data & filter based on multiple criteria afterwards. (preferred and used here)
+
+# Actual Screening will be done using ipynb with Jupyter Notebook
 '''
 
 cwd = pathlib.Path.cwd().resolve()
@@ -40,6 +42,8 @@ def merge_data(source):
 
 
 def export_data(df):
+    """Export the df in csv format after the column names are standardized"""
+
     standardized_names = ['shortName', 'sector', 'industry', 'market', 'price', 'priceCurrency', 'sharesOutstanding',
                           'reportCurrency', 'fxRate', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend',
                           'lastBuyback',
@@ -64,8 +68,6 @@ def export_data(df):
 
     df.columns = standardized_names
     df.to_csv(screener_folder / 'screener_summary.csv')
-
-# Step 2: filter done using ipynb with Jupyter Notebook
 
 
 # Step 1: Collect files

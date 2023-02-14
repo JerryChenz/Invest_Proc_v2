@@ -263,7 +263,7 @@ def clean_data(df):
 
 
 def output_data():
-    """"""
+    """Merge, clean, standardize names, and export data from yfinance"""
 
     df = screener.merge_data("yf")
     df = clean_data(df)
