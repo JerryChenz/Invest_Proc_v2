@@ -135,6 +135,7 @@ def format_data(df):
 
 def get_forex(report_symbol, price_symbol):
     """ Return the forex quote
+    Known bug: If there is no quote available, the fxRate will be 0.
 
     :param report_symbol: String forex report symbol
     :param price_symbol: String forex price symbol
@@ -146,6 +147,9 @@ def get_forex(report_symbol, price_symbol):
     # print(report_symbol + " " + price_symbol)
     if report_symbol == price_symbol:
         return 1
+    elif report_symbol == "MOP" and price_symbol == "HKD":
+        # Known missing quote on yahoo finance
+        return 0.98
     else:
         forex_code = f"{report_symbol}{price_symbol}=X"
         # print(forex_code)
