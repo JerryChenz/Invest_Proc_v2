@@ -1,11 +1,11 @@
 from smart_value.asset import *
 from smart_value.financial_data import yahoo_data as yf
-from smart_value.financial_data import yfin_data as yfin
-from smart_value.financial_data import exchange_rate as fx
+from smart_value.financial_data import yf_data
 import pandas as pd
 
 # The stock summary should follow this format
 standardized_summary = []
+
 
 class Stock(Asset):
     """a type of Securities"""
@@ -40,8 +40,8 @@ class Stock(Asset):
 
         if self.source == "yf":
             self.load_from_yf()
-        elif self.source == "yfin":
-            self.load_from_yfin()
+        elif self.source == "yf_quote":
+            self.load_yf_quote()
         elif self.source == "fmp":
             self.load_from_fmp()
         else:
@@ -58,7 +58,7 @@ class Stock(Asset):
         self.exchange = ticker_data.exchange
         self.shares = ticker_data.shares
         self.report_currency = ticker_data.report_currency
-        self.fx_rate = fx.get_forex_rate(self.report_currency, self.price[1])
+        self.fx_rate = yf_data.get_forex(self.report_currency, self.price[1])
         self.periodic_payment = ticker_data.dividends
         self.buyback = ticker_data.buyback
         self.annual_bs = ticker_data.annual_bs
@@ -74,22 +74,20 @@ class Stock(Asset):
         self.years_of_data = ticker_data.years_of_data
         self.last_fy = ticker_data.annual_bs.columns[0]
 
-    def load_from_yfin(self):
+    def load_yf_quote(self):
         """Scrap the financial_data from yfinance API"""
 
-        update_info = yfin.market_info(self.asset_code)
-        market_price = update_info[0]
-        price_currency = update_info[1]
-        report_currency = update_info[2]
+        market_price = yf_data.get_quote(self.asset_code, "last_price")
+        price_currency = yf_data.get_quote(self.asset_code, "currency")
+        report_currency = yf_data.get_info(self.asset_code, "financialCurrency")
 
         self.price = [market_price, price_currency]
-        self.fx_rate = fx.get_forex_rate(report_currency, price_currency)
+        self.fx_rate = yf_data.get_forex(report_currency, price_currency)
 
     def load_from_fmp(self):
         """Scrap the financial_data from FMP API"""
 
         pass
-
 
     def current_summary(self):
         """Return a summary of all the key stock data.

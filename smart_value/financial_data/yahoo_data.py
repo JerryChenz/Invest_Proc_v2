@@ -1,7 +1,6 @@
 import pandas as pd
 from datetime import datetime
 from yfinance import Ticker
-import smart_value.stock as stock
 
 
 class Financials:

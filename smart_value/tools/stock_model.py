@@ -3,7 +3,6 @@ import pathlib
 import shutil
 import os
 from datetime import datetime
-import pandas as pd
 import re
 import smart_value.stock
 

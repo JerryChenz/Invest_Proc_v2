@@ -4,7 +4,7 @@ import pathlib
 import re
 import smart_value.stock
 import smart_value.tools.stock_model
-import smart_value.financial_data.riskfree_rate
+import smart_value.financial_data.fred_data
 
 
 def load_opportunities():
@@ -55,9 +55,10 @@ def read_opportunity(opportunities_path):
     with xlwings.App(visible=False) as app:
         xl_book = app.books.open(opportunities_path)
         dash_sheet = xl_book.sheets('Dashboard')
-        # Update the models first in the opportunities folder
+
         if r_stock.match(str(opportunities_path)):
-            company = smart_value.stock.Stock(dash_sheet.range('C3').value, "yfin")
+            # Update the models first in the opportunities folder
+            company = smart_value.stock.Stock(dash_sheet.range('C3').value, "yf_quote")
             smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
             xl_book.save(opportunities_path)  # xls must be saved to update the values
             opportunity = read_stock(dash_sheet)

@@ -2,11 +2,11 @@ from datetime import datetime
 import xlwings
 import pathlib
 import re
-import smart_value.financial_data.riskfree_rate
+import smart_value.financial_data.fred_data
 
 
-us_riskfree = smart_value.financial_data.riskfree_rate.risk_free_rate("us")
-cn_riskfree = smart_value.financial_data.riskfree_rate.risk_free_rate("cn")
+us_riskfree = smart_value.financial_data.fred_data.risk_free_rate("us")
+cn_riskfree = smart_value.financial_data.fred_data.risk_free_rate("cn")
 
 
 def update_market(self, pipline_book):

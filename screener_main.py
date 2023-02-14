@@ -12,4 +12,5 @@ us_symbols = 'AACI AADI AAL AAME AAOI AAON AAPL AAWW ABCB ABCL ABCM ABGI ABNB AB
 data_list = cn_symbols
 
 if __name__ == '__main__':
-    yf_data.get_yf_data(data_list)
+    # yf_data.get_yf_data(data_list)
+    yf_data.output_data()
