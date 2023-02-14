@@ -15,6 +15,59 @@ screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
 json_dir = screener_folder / 'data'
 
 
+def merge_data(source):
+    """Merge multiple JSON files into a pandas DataFrame, then export to csv"""
+
+    json_pattern = os.path.join(json_dir, '*.json')
+    files = glob.glob(json_pattern)  # gets back a list of file objects
+    files_count = len(files)
+    i = 0  # Counter for progress
+
+    dfs = []  # an empty list to store the data frames
+    for file in files:
+        i += 1
+        print(f"processing the {i}/{files_count} file...")
+        data = pd.read_json(file)  # read data frame from json file
+        if source == "yf":
+            # print(data)
+            data = yf_data.update_data(data)
+        else:
+            data = data
+        # print(data)
+        dfs.append(data)  # append the data frame to the list
+    print("Merging and cleaning data. Please wait...")
+    return pd.concat(dfs, ignore_index=False)  # concatenate all the dataframes in the list.
+
+
+def export_data(df):
+    standardized_names = ['shortName', 'sector', 'industry', 'market', 'price', 'priceCurrency', 'sharesOutstanding',
+                          'reportCurrency', 'fxRate', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend',
+                          'lastBuyback',
+                          'totalAssets', 'currentAssets', 'currentLiabilities',
+                          'totalAssets_-1', 'currentAssets_-1', 'currentLiabilities_-1',
+                          'cashAndCashEquivalents', 'otherShortTermInvestments',
+                          'cashAndCashEquivalents_-1', 'otherShortTermInvestments_-1',
+                          'currentDebtAndCapitalLease', 'currentCapitalLease',
+                          'currentDebtAndCapitalLease_-1', 'currentCapitalLease_-1',
+                          'longTermDebtAndCapitalLease', 'longTermCapitalLease',
+                          'longTermDebtAndCapitalLease_-1', 'longTermCapitalLease_-1',
+                          'totalEquityAndMinorityInterest', 'commonStockEquity',
+                          'totalEquityAndMinorityInterest_-1', 'commonStockEquity_-1',
+                          'investmentProperties', 'longTermEquityInvestment', 'longTermFinancialAssets',
+                          'investmentProperties_-1', 'longTermEquityInvestment_-1', 'longTermFinancialAssets_-1',
+                          'netPPE', 'totalRevenue', 'costOfRevenue', 'sellingGeneralAndAdministration',
+                          'netPPE_-1', 'totalRevenue_-1', 'costOfRevenue_-1', 'sellingGeneralAndAdministration_-1',
+                          'netIncomeCommonStockholders', 'interestPaidCfo', 'interestPaidCff',
+                          'netIncomeCommonStockholders_-1', 'interestPaidCfo_-1', 'interestPaidCff_-1',
+                          'cfo', 'cfi', 'cff', 'endCashPosition',
+                          'cfo_-1', 'cfi_-1', 'cff_-1', 'endCashPosition_-1']
+
+    df.columns = standardized_names
+    df.to_csv(screener_folder / 'screener_summary.csv')
+
+# Step 2: filter done using ipynb with Jupyter Notebook
+
+
 # Step 1: Collect files
 # def collect_files(symbols, intro_col):
 #     """Find and read the 4 jsons of a company, then export to a screener_data csv
@@ -95,33 +148,3 @@ json_dir = screener_folder / 'data'
 #     third.index = [s + "_-2" for s in col]
 #
 #     return pd.concat([third, second, first])
-
-
-def merge_data(source):
-    """Merge multiple JSON files into a pandas DataFrame, then export to csv"""
-
-    json_pattern = os.path.join(json_dir, '*.json')
-    files = glob.glob(json_pattern)  # gets back a list of file objects
-    files_count = len(files)
-    i = 0  # Counter for progress
-
-    dfs = []  # an empty list to store the data frames
-    for file in files:
-        i += 1
-        print(f"processing the {i}/{files_count} file...")
-        data = pd.read_json(file)  # read data frame from json file
-        if source == "yf":
-            # print(data)
-            data = yf_data.update_data(data)
-        else:
-            data = data
-        # print(data)
-        dfs.append(data)  # append the data frame to the list
-    print("Merging and cleaning data. Please wait...")
-    return pd.concat(dfs, ignore_index=False)  # concatenate all the dataframes in the list.
-
-
-def export_data(df):
-    df.to_csv(screener_folder / 'screener_summary.csv')
-
-# Step 2: filter done using ipynb with Jupyter Notebook
