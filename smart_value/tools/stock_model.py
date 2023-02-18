@@ -119,9 +119,8 @@ def update_data(data_sheet, stock, new_bool=False):
             data_sheet.range((7, i + 3)).value = int(stock.is_df.iloc[0, i] / report_unit)
             data_sheet.range((9, i + 3)).value = int(stock.is_df.iloc[1, i] / report_unit)
             data_sheet.range((11, i + 3)).value = int(stock.is_df.iloc[2, i] / report_unit)
-            data_sheet.range((18, i + 3)).value = int(stock.is_df.iloc[3, i] / report_unit)
-            data_sheet.range((19, i + 3)).value = int(stock.is_df.iloc[4, i] / report_unit)
-            # CommonStockDividendPaid
+            data_sheet.range((18, i + 3)).value = int(stock.is_df.iloc[4, i] / report_unit)
+            # CashDividendsPaid
             data_sheet.range((41, i + 3)).value = int(-stock.cf_df.iloc[3, i] / report_unit)
             # RepurchaseOfCapitalStock
             data_sheet.range((42, i + 3)).value = int(-stock.cf_df.iloc[4, i] / report_unit)
