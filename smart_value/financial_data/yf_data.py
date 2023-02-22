@@ -286,13 +286,13 @@ class Financials:
         self.exchange = self.stock_data.fast_info['exchange']
         self.shares = self.stock_data.info['sharesOutstanding']
         self.report_currency = self.stock_data.info['financialCurrency']
-        self.avg_gross_margin = None
-        self.avg_ebit_margin = None
-        self.avg_net_margin = None
-        self.avg_sales_growth = None
-        self.avg_ebit_growth = None
-        self.avg_ni_growth = None
-        self.years_of_data = None
+        # self.avg_gross_margin = None
+        # self.avg_ebit_margin = None
+        # self.avg_net_margin = None
+        # self.avg_sales_growth = None
+        # self.avg_ebit_growth = None
+        # self.avg_ni_growth = None
+        # self.years_of_data = None
         self.annual_bs = self.get_balance_sheet("annual")
         self.quarter_bs = self.get_balance_sheet("quarter")
         self.income_statement = self.get_income_statement()
@@ -360,46 +360,46 @@ class Financials:
         # Ending of Cleaning: drop the dummy column after join
         is_df.drop('Dummy', inplace=True, axis=1)
         is_df = is_df.fillna(0).transpose()
-        try:
-            is_df['Gross_margin'] = is_df['CostOfRevenue'] / is_df['TotalRevenue'] * 100
-            is_df['Gross_margin'] = is_df['Gross_margin'].astype(float).round(decimals=2)
-        except ZeroDivisionError:
-            is_df['Gross_margin'] = 0
-        try:
-            is_df['Ebit'] = is_df['TotalRevenue'] - is_df['CostOfRevenue'] - is_df['SellingGeneralAndAdministration']
-        except ZeroDivisionError:
-            is_df['Ebit'] = 0
-        try:
-            is_df['Ebit_margin'] = is_df['Ebit'] / is_df['TotalRevenue'] * 100
-            is_df['Ebit_margin'] = is_df['Ebit_margin'].astype(float).round(decimals=2)
-        except ZeroDivisionError:
-            is_df['Ebit_margin'] = 0
-        try:
-            is_df['Net_margin'] = is_df['NetIncomeCommonStockholders'] / is_df['TotalRevenue'] * 100
-            is_df['Net_margin'] = is_df['Net_margin'].astype(float).round(decimals=2)
-        except ZeroDivisionError:
-            is_df['Net_margin'] = 0
-
-        self.avg_gross_margin = is_df["Gross_margin"].mean()
-        self.avg_ebit_margin = is_df["Ebit_margin"].mean()
-        self.avg_net_margin = is_df["Net_margin"].mean()
-        try:
-            self.avg_sales_growth = round((is_df.iloc[::-1]['TotalRevenue']
-                                           .pct_change().dropna()).mean().astype(float) * 100, 2)
-        except AttributeError:
-            # empty TotalRevenue bug
-            self.avg_sales_growth = 0
-        try:
-            self.avg_ebit_growth = round((is_df.iloc[::-1]['Ebit']
-                                          .pct_change().dropna()).mean().astype(float) * 100, 2)
-        except AttributeError:
-            self.avg_ebit_growth = 0
-        try:
-            self.avg_ni_growth = round((is_df.iloc[::-1]['NetIncomeCommonStockholders']
-                                        .pct_change().dropna()).mean().astype(float) * 100, 2)
-        except AttributeError:
-            self.avg_ni_growth = 0
-        self.years_of_data = len(is_df['TotalRevenue'])
+        # try:
+        #     is_df['Gross_margin'] = is_df['CostOfRevenue'] / is_df['TotalRevenue'] * 100
+        #     is_df['Gross_margin'] = is_df['Gross_margin'].astype(float).round(decimals=2)
+        # except ZeroDivisionError:
+        #     is_df['Gross_margin'] = 0
+        # try:
+        #     is_df['Ebit'] = is_df['TotalRevenue'] - is_df['CostOfRevenue'] - is_df['SellingGeneralAndAdministration']
+        # except ZeroDivisionError:
+        #     is_df['Ebit'] = 0
+        # try:
+        #     is_df['Ebit_margin'] = is_df['Ebit'] / is_df['TotalRevenue'] * 100
+        #     is_df['Ebit_margin'] = is_df['Ebit_margin'].astype(float).round(decimals=2)
+        # except ZeroDivisionError:
+        #     is_df['Ebit_margin'] = 0
+        # try:
+        #     is_df['Net_margin'] = is_df['NetIncomeCommonStockholders'] / is_df['TotalRevenue'] * 100
+        #     is_df['Net_margin'] = is_df['Net_margin'].astype(float).round(decimals=2)
+        # except ZeroDivisionError:
+        #     is_df['Net_margin'] = 0
+        #
+        # self.avg_gross_margin = is_df["Gross_margin"].mean()
+        # self.avg_ebit_margin = is_df["Ebit_margin"].mean()
+        # self.avg_net_margin = is_df["Net_margin"].mean()
+        # try:
+        #     self.avg_sales_growth = round((is_df.iloc[::-1]['TotalRevenue']
+        #                                    .pct_change().dropna()).mean().astype(float) * 100, 2)
+        # except AttributeError:
+        #     # empty TotalRevenue bug
+        #     self.avg_sales_growth = 0
+        # try:
+        #     self.avg_ebit_growth = round((is_df.iloc[::-1]['Ebit']
+        #                                   .pct_change().dropna()).mean().astype(float) * 100, 2)
+        # except AttributeError:
+        #     self.avg_ebit_growth = 0
+        # try:
+        #     self.avg_ni_growth = round((is_df.iloc[::-1]['NetIncomeCommonStockholders']
+        #                                 .pct_change().dropna()).mean().astype(float) * 100, 2)
+        # except AttributeError:
+        #     self.avg_ni_growth = 0
+        # self.years_of_data = len(is_df['TotalRevenue'])
 
         return is_df.transpose()
 
