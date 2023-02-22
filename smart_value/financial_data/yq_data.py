@@ -1,5 +1,3 @@
-import pandas as pd
-import datetime as dt
 from smart_value.stock import *
 from yahooquery import Ticker
 from forex_python.converter import CurrencyRates
@@ -57,19 +55,19 @@ class YqData(Stock):
 
     def load_attributes(self):
 
-        self.name = self.stock_data.quote_type['shortName']
-        self.sector = self.stock_data.asset_profile['sector']
-        self.price = [self.stock_data.financial_data['currentPrice'], self.stock_data.price['currency']]
-        self.exchange = self.stock_data.quote_type['exchange']
-        self.shares = self.stock_data.key_stats['sharesOutstanding']
-        self.report_currency = self.stock_data.financial_data['financialCurrency']
+        self.name = self.stock_data.quote_type[self.symbol]['shortName']
+        self.sector = self.stock_data.asset_profile[self.symbol]['sector']
+        self.price = [self.stock_data.financial_data[self.symbol]['currentPrice'],
+                      self.stock_data.price[self.symbol]['currency']]
+        self.exchange = self.stock_data.quote_type[self.symbol]['exchange']
+        self.shares = self.stock_data.key_stats[self.symbol]['sharesOutstanding']
+        self.report_currency = self.stock_data.financial_data[self.symbol]['financialCurrency']
         self.annual_bs = self.get_balance_sheet("annual")
         self.quarter_bs = self.get_balance_sheet("quarterly")
         self.is_df = self.get_income_statement()
         self.cf_df = self.get_cash_flow()
         # left most column contains the most recent data
-        self.most_recent_quarter = pd.to_datetime(dt.datetime.fromtimestamp(self.quarter_bs.columns.values.tolist()[0])
-                                                  .strftime("%Y-%m-%d"))
+        self.most_recent_quarter = self.quarter_bs.columns[0]  # .strftime("%Y-%m-%d")
         try:
             self.last_dividend = -int(self.cf_df.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
@@ -126,9 +124,10 @@ class YqData(Stock):
 
         if option == "annual":
             # reverses the dataframe with .iloc[:, ::-1]
-            balance_sheet = self.stock_data.balance_sheet(trailing=False).T.iloc[:, ::-1]
+            balance_sheet = self.stock_data.balance_sheet(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
         else:
-            balance_sheet = self.stock_data.balance_sheet(frequency="q", trailing=False).T.iloc[:, ::-1]
+            balance_sheet = self.stock_data.balance_sheet(frequency="q", trailing=False).set_index('asOfDate')\
+                                .T.iloc[:, ::-1]
         # Start of Cleaning: make sure the data has all the required indexes
         dummy_df = pd.DataFrame(dummy, index=bs_index)
         clean_bs = dummy_df.join(balance_sheet)
@@ -166,7 +165,6 @@ class YqData(Stock):
 
         # reverses the dataframe with .iloc[:, ::-1]
         income_statement = self.stock_data.income_statement(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
-        print(income_statement.index)
         # Start of Cleaning: make sure the data has all the required indexes
         dummy = {"Dummy": [None, None, None, None, None]}
         is_index = ['TotalRevenue', 'CostOfRevenue', 'SellingGeneralAndAdministration', 'InterestExpense',

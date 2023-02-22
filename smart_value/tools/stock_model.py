@@ -17,7 +17,7 @@ def new_stock_model(ticker, source):
     :raises FileNotFoundError: raises an exception when there is an error related to the model files or path
     """
 
-    stock_regex = re.compile(".*Stock_Valuation_v")
+    stock_regex = re.compile(".*Stock_Valuation")
     negative_regex = re.compile(".*~.*")
 
     # Relevant Paths
@@ -71,8 +71,7 @@ def update_stock_model(ticker, model_name, model_path, new_bool, source):
         model_xl = app.books.open(model_path)
         update_dashboard(model_xl.sheets('Dashboard'), company, new_bool)
         if new_bool:
-            update_data(model_xl.sheets('Data'), company)
-            update_asset(model_xl.sheets('Asset_Model'), company)
+            update_data(model_xl.sheets('Data'), model_xl.sheets('Asset_Model'), company)
         model_xl.save(model_path)
         model_xl.close()
 
@@ -96,10 +95,11 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     dash_sheet.range('I12').value = stock.fx_rate
 
 
-def update_data(data_sheet, stock):
+def update_data(data_sheet, asset_sheet, stock):
     """Update the Data sheet.
 
-    :param data_sheet: the xlwings object of the model
+    :param data_sheet: the xlwings object of Data
+    :param asset_sheet: the xlwings object of Asset_Model
     :param stock: the Stock object
     """
 
@@ -140,24 +140,27 @@ def update_data(data_sheet, stock):
 
     for k in range(len(stock.cf_df.columns)):
         # Cash flow statement
-        data_sheet.range((31, k + 3)).value = int(-stock.cf_df.iloc[5, k] / report_unit)  # EndCashPosition
+        data_sheet.range((31, k + 3)).value = int(stock.cf_df.iloc[5, k] / report_unit)  # EndCashPosition
         data_sheet.range((37, k + 3)).value = int(-stock.cf_df.iloc[3, k] / report_unit)  # CashDividendsPaid
         data_sheet.range((38, k + 3)).value = int(-stock.cf_df.iloc[4, k] / report_unit)  # RepurchaseOfCapitalStock
 
+    update_asset(asset_sheet, stock, report_unit)
 
-def update_asset(dash_sheet, stock):
+
+def update_asset(dash_sheet, stock, report_unit):
     """Update the Dashboard sheet.
 
     :param dash_sheet: the xlwings object of the model
+    :param report_unit: financial statement unit
     :param stock: the Stock object
     """
 
-    dash_sheet.range('D3').value = stock.quarter_bs.iloc[7, 0]  # total equity
-    dash_sheet.range('I3').value = stock.quarter_bs.iloc[8, 0]  # common equity
+    dash_sheet.range('D3').value = stock.quarter_bs.iloc[7, 0] / report_unit  # total equity
+    dash_sheet.range('I3').value = stock.quarter_bs.iloc[8, 0] / report_unit  # common equity
     dash_sheet.range('D9').value = stock.most_recent_quarter  # result date
-    dash_sheet.range('I26').value = stock.quarter_bs.iloc[7, 0]  # current liabilities
+    dash_sheet.range('I26').value = stock.quarter_bs.iloc[7, 0] / report_unit  # current liabilities
     # Non-current liabilities = Total Asset - Total Equity
-    dash_sheet.range('I42').value = stock.quarter_bs.iloc[0, 0] - stock.quarter_bs.iloc[7, 0]
+    dash_sheet.range('I42').value = (stock.quarter_bs.iloc[0, 0] - stock.quarter_bs.iloc[7, 0]) / report_unit
 
 
 # update dash only, not touching the data tab
