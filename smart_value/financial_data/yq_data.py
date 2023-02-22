@@ -1,6 +1,91 @@
 from smart_value.stock import *
+from smart_value.tools.stock_screener import *
 from yahooquery import Ticker
 from forex_python.converter import CurrencyRates
+import time
+
+
+def download_yq(symbols, attempt, failure_list):
+    """
+        Download the stock data and export them into 4 json files:
+        1. intro_data, 2. bs_data, 3. is_data. 4. cf_data
+
+        :param attempt: try_count
+        :param symbols: list of symbols separated by a space
+        :param failure_list: Tracking the failing symbols
+        :return updated failure list
+        """
+
+    # external API error re-try
+    max_try = 2
+
+    info_col = ['shortName', 'sector', 'industry', 'market', 'sharesOutstanding', 'financialCurrency',
+                'lastFiscalYearEnd', 'mostRecentQuarter']
+    yf_companies = Ticker(symbols)
+    symbol_list = symbols.split(" ")
+    while symbol_list:
+        symbol = symbol_list.pop(0)  # pop from the beginning
+        try:
+            # introductory information
+            info = pd.Series(yf_companies.tickers[symbol].info)
+            # info['currency'] = companies.tickers[symbol].fast_info['currency']  # get it when updating price
+            # info['exchange'] = companies.tickers[symbol].fast_info['exchange']  # Use market instead
+            info = info.loc[info_col]
+            # Balance Sheet
+            bs_df = yf_companies.tickers[symbol].quarterly_balance_sheet
+            bs_df = format_data(bs_df)
+
+            # Income statement
+            is_df = yf_companies.tickers[symbol].financials
+            is_df = format_data(is_df)
+            # # Cash Flow statement
+            cf_df = yf_companies.tickers[symbol].cashflow
+            cf_df = format_data(cf_df)
+            # Create one big one-row stock_df by using side-by-side merge
+            stock_df = pd.concat([info, bs_df, is_df, cf_df])
+            stock_df = stock_df.transpose()
+            stock_df['ticker'] = symbol
+            stock_df.set_index('ticker').to_json(json_dir / f"{symbol}_data.json")
+            if attempt == 0:
+                print(f"{symbol} exported, {len(symbol_list)} stocks left...")
+            else:
+                print(f"Retry succeeded: {symbol} exported")
+            return failure_list
+        except:
+            error_str = symbol
+            attempt += 1
+            if attempt <= max_try:
+                print(f"API error - {error_str}. Re-try in 60 sec: {max_try - attempt} "
+                      f"attempts left...")
+                time.sleep(60)
+                download_yq(error_str, attempt, failure_list)
+            else:
+                failure_list.append(error_str)
+                print(f'API error - {error_str} failed after {max_try} attempts')
+                return failure_list
+            # restart counting at next ticker
+            attempt = 0
+            continue
+
+
+def format_data(df):
+    """ Return the formatted one row annual statement dataframe.
+
+    :param df: Dataframe
+    :return: formatted Dataframe
+    """
+
+    if len(df.columns) <= 1:
+        df.columns = [0]
+        return df
+    else:
+        col = df.index.values.tolist()
+        first = df.iloc[:, :1]
+        first.columns = [0]
+        second = df.iloc[:, 1:2]
+        second.columns = [0]
+        second.index = [s + "_-1" for s in col]
+        return pd.concat([second, first])
 
 
 def get_quote(symbol):
@@ -126,7 +211,7 @@ class YqData(Stock):
             # reverses the dataframe with .iloc[:, ::-1]
             balance_sheet = self.stock_data.balance_sheet(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
         else:
-            balance_sheet = self.stock_data.balance_sheet(frequency="q", trailing=False).set_index('asOfDate')\
+            balance_sheet = self.stock_data.balance_sheet(frequency="q", trailing=False).set_index('asOfDate') \
                                 .T.iloc[:, ::-1]
         # Start of Cleaning: make sure the data has all the required indexes
         dummy_df = pd.DataFrame(dummy, index=bs_index)

@@ -3,6 +3,10 @@ import os
 import pathlib
 import pandas as pd
 import smart_value.financial_data.yf_data as yf_data
+import time
+import random
+from smart_value.financial_data import yf_data as yf
+from smart_value.financial_data import yq_data as yq
 
 '''
 Two ways to create a screener:
@@ -15,6 +19,47 @@ Two ways to create a screener:
 cwd = pathlib.Path.cwd().resolve()
 screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
 json_dir = screener_folder / 'data'
+
+
+def get_data(symbols, source):
+    """
+    Download the stock data and export them into 4 json files:
+    1. intro_data, 2. bs_data, 3. is_data. 4. cf_data
+
+    :param symbols: list of symbols separated by a space
+    :param source: String Data Source selector
+
+    PS. yfinance marks a table as abusive if it seems to be hogging its resources, or consistently taking more than 30s
+    to execute.
+    """
+
+    failure_list = []
+
+    full_list = symbols.split(" ")
+    while full_list:
+        pop_num = 3
+        n = random.randint(pop_num * 5, pop_num * 30)
+        # select the first few items
+        selected_list = full_list[:pop_num]
+        # del the first few items
+        del full_list[0:pop_num]
+        print(f"downloading data from {selected_list[0]} to {selected_list[-1]}, {len(full_list)} waiting to be "
+              f"processed...")
+        selected_str = ' '.join(selected_list)
+        if source == "yf":
+            failure_list = yf.download_yf(selected_str, 0, failure_list)
+            # wait before next batch to avoid being marked as abusive by yfinance
+            wait = n
+            print(f"wait {wait} seconds to avoid being marked as abusive...")
+            time.sleep(wait)
+        elif source == "yq":
+            failure_list = yq.download_yq(selected_str, 0, failure_list)
+            # wait before next batch to avoid being marked as abusive by yfinance
+            wait = n
+            print(f"wait {wait} seconds to avoid being marked as abusive...")
+            time.sleep(wait)
+    if failure_list:
+        print(f"failed list: {' '.join(failure_list)}")
 
 
 def merge_data(source):
@@ -68,85 +113,3 @@ def export_data(df):
 
     df.columns = standardized_names
     df.to_csv(screener_folder / 'screener_summary.csv')
-
-
-# Step 1: Collect files
-# def collect_files(symbols, intro_col):
-#     """Find and read the 4 jsons of a company, then export to a screener_data csv
-#
-#     :param intro_col: List with intro column names
-#     :param symbols: String symbols separated by a space
-#     :return
-#     """
-#
-#     screener_dfs = []  # an empty list to store the dataframes
-#     symbol_list = symbols.split(" ")
-#
-#     while symbol_list:
-#         print("Begins to prepare screening data...")
-#         symbol = symbol_list.pop(0)  # pop from the beginning
-#
-#         try:
-#             stock_df = read_company_json(symbol, intro_col)
-#             screener_dfs.append(stock_df.transpose())  # a single row
-#         except RuntimeError:
-#             print(f"{symbol} Data Incomplete. Skip. {len(symbol_list)} stocks left to prepare...")
-#             continue
-#     df = pd.concat(screener_dfs, ignore_index=False)  # concatenate all the data frames in the list.
-#     # df = df.set_index('Ticker')  # Not needed I think
-#     df.to_csv(screener_folder / 'screener_data.csv')
-#
-#
-# def read_company_json(symbol, intro_col):
-#     """ read the 4 jsons of a company
-#
-#     :param intro_col: List with intro column names
-#     :param symbol: string
-#     :return: a list of 4 pandas
-#     """
-#
-#     this_intro = json_dir / f'{symbol}_intro_data.json'
-#     this_bs = json_dir / f'{symbol}_bs_data.json'
-#     this_is = json_dir / f'{symbol}_is_data.json'
-#     this_cf = json_dir / f'{symbol}_cf_data.json'
-#     if this_intro.is_file() and this_bs.is_file() and this_is.is_file() and this_cf.is_file():
-#         intro_df = pd.read_json(this_intro)
-#         # Quarterly Balance sheet statement
-#         bs_df = pd.read_json(this_bs)
-#         # Annual Income statement
-#         is_df = pd.read_json(this_is)
-#         # Annual Cash flor statement
-#         cf_df = pd.read_json(this_cf)
-#         return pd.concat([intro_df.loc[intro_col], format_quarter(bs_df), format_annual(is_df), format_annual(cf_df)])
-#     else:
-#         raise RuntimeError(f"{symbol} Data Incomplete.")
-#
-#
-# def format_quarter(df):
-#     col = df.index.values.tolist()
-#     first = df.iloc[:, :1]
-#     first.columns = [0]
-#     second = df.iloc[:, 1:2]
-#     second.index = [s + "_-1" for s in col]
-#     second.columns = [0]
-#     return pd.concat([second, first])
-#
-#
-# def format_annual(df):
-#     """ Return the formatted one row annual statement dataframe.
-#
-#     :param df: Dataframe
-#     :return: formatted Dataframe
-#     """
-#
-#     col = df.index.values.tolist()
-#     first = df.iloc[:, :1]
-#     first.columns = [0]
-#     second = df.iloc[:, 1:2]
-#     second.columns = [0]
-#     second.index = [s + "_-1" for s in col]
-#     third = df.iloc[:, 2:3]
-#     third.columns = [0]
-#     third.index = [s + "_-2" for s in col]
-#
-#     return pd.concat([third, second, first])

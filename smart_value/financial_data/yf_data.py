@@ -1,11 +1,8 @@
-import pathlib
-import pandas as pd
 from yfinance import Tickers, Ticker, download
 import datetime as dt
-import time
-import random
 from smart_value.stock import *
-import smart_value.tools.stock_screener as screener
+from smart_value.tools.stock_screener import *
+import time
 
 '''
 Available yfinance features:
@@ -17,51 +14,16 @@ attrs = [
 ]
 '''
 
-cwd = pathlib.Path.cwd().resolve()
-screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
-json_dir = screener_folder / 'data'
 
-failure_list = []
-
-
-def get_yf_data(symbols):
-    """
-    Download the stock data and export them into 4 json files:
-    1. intro_data, 2. bs_data, 3. is_data. 4. cf_data
-
-    :param symbols: list of symbols separated by a space
-
-    PS. yfinance marks a table as abusive if it seems to be hogging its resources, or consistently taking more than 30s
-    to execute.
-    """
-
-    full_list = symbols.split(" ")
-    while full_list:
-        pop_num = 3
-        n = random.randint(pop_num * 5, pop_num * 30)
-        # select the first few items
-        selected_list = full_list[:pop_num]
-        # del the first few items
-        del full_list[0:pop_num]
-        print(f"downloading data from {selected_list[0]} to {selected_list[-1]}, {len(full_list)} waiting to be "
-              f"processed...")
-        selected_str = ' '.join(selected_list)
-        download_yf(selected_str, 0)
-        # wait before next batch to avoid being marked as abusive by yfinance
-        wait = n
-        print(f"wait {wait} seconds to avoid being marked as abusive...")
-        time.sleep(wait)
-    if failure_list:
-        print(f"failed list: {' '.join(failure_list)}")
-
-
-def download_yf(symbols, attempt):
+def download_yf(symbols, attempt, failure_list):
     """
         Download the stock data and export them into 4 json files:
         1. intro_data, 2. bs_data, 3. is_data. 4. cf_data
 
         :param attempt: try_count
         :param symbols: list of symbols separated by a space
+        :param failure_list: Tracking the failing symbols
+        :return updated failure list
         """
 
     # external API error re-try
@@ -98,6 +60,7 @@ def download_yf(symbols, attempt):
                 print(f"{symbol} exported, {len(symbol_list)} stocks left...")
             else:
                 print(f"Retry succeeded: {symbol} exported")
+            return failure_list
         except:
             error_str = symbol
             attempt += 1
@@ -105,10 +68,11 @@ def download_yf(symbols, attempt):
                 print(f"API error - {error_str}. Re-try in 60 sec: {max_try - attempt} "
                       f"attempts left...")
                 time.sleep(60)
-                download_yf(error_str, attempt)
+                download_yf(error_str, attempt, failure_list)
             else:
                 failure_list.append(error_str)
                 print(f'API error - {error_str} failed after {max_try} attempts')
+                return failure_list
             # restart counting at next ticker
             attempt = 0
             continue
@@ -266,9 +230,9 @@ def clean_data(df):
 def output_data():
     """Merge, clean, standardize names, and export data from yfinance"""
 
-    df = screener.merge_data("yf")
+    df = merge_data("yf")
     df = clean_data(df)
-    screener.export_data(df)
+    export_data(df)
 
 
 class YfData(Stock):
