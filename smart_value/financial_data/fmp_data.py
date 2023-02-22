@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
+import pandas as pd
+import fundamentalanalysis as fa
+from smart_value.stock import *
+
 """
 Data provided by Financial Modeling Prep
 https://site.financialmodelingprep.com/developer/docs/
 Python API wrapper by
 https://github.com/JerBouma/FundamentalAnalysis
 """
-
-import pandas as pd
-import fundamentalanalysis as fa
 
 api_key = 'c99eda5db224d34162adae341298790b'
 
@@ -44,3 +44,15 @@ cash_flow_statement_annually = fa.cash_flow_statement(
 
 # individual income statement items by year
 print(list(cash_flow_statement_annually['2021'].index))
+
+
+class FmpData(Stock):
+    """Retrieves the data from FMP API"""
+
+    api_key = 'c99eda5db224d34162adae341298790b'
+
+    def __init__(self, symbol):
+        """
+        :param symbol: string ticker of the stock
+        """
+        super().__init__(symbol)
