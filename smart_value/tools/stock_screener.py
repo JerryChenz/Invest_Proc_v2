@@ -61,7 +61,7 @@ def get_data(symbols, source):
         print(f"failed list: {' '.join(failure_list)}")
 
 
-def merge_data(source):
+def output_data(source):
     """Merge multiple JSON files into a pandas DataFrame, then export to csv"""
 
     json_pattern = os.path.join(json_dir, '*.json')
@@ -70,6 +70,7 @@ def merge_data(source):
     i = 0  # Counter for progress
 
     dfs = []  # an empty list to store the data frames
+    # Step 1: merge the files
     for file in files:
         i += 1
         print(f"processing the {i}/{files_count} file...")
@@ -84,7 +85,24 @@ def merge_data(source):
         # print(data)
         dfs.append(data)  # append the data frame to the list
     print("Merging and cleaning data. Please wait...")
-    return pd.concat(dfs, ignore_index=False)  # concatenate all the dataframes in the list.
+    merged_df = pd.concat(dfs, ignore_index=False)  # concatenate all the dataframes in the list.
+
+    # Step 2: clean the data
+    if 'source' in merged_df.columns:
+        try:
+            if merged_df['source'] == "yf_data":
+                merged_df = yf.clean_data(merged_df)
+            elif merged_df['source'] == "yq_data":
+                merged_df = yq.clean_data(merged_df)
+            else:
+                raise ValueError
+        except ValueError:
+            print("Unrecognizable data file source.")
+    else:
+        merged_df = yf.clean_data(merged_df)
+
+    # Step 3: export the data
+    export_data(merged_df)
 
 
 def export_data(df):
@@ -115,13 +133,3 @@ def export_data(df):
     df.columns = standardized_names
     df.to_csv(screener_folder / 'screener_summary.csv')
 
-
-def output_data(source):
-    """Merge, clean, standardize names, and export data from yfinance"""
-
-    df = merge_data(source)
-    if source == "yf":
-        df = yf.clean_data(df)
-    elif source == "yq":
-        df = yq.clean_data(df)
-    export_data(df)
