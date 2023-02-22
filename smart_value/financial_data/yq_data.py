@@ -1,20 +1,62 @@
 import pandas as pd
-from datetime import datetime
+import datetime as dt
+from smart_value.stock import *
 from yahooquery import Ticker
+from forex_python.converter import CurrencyRates
 
 
-class YqData:
-    """Retrieves the data from YH Finance API and yfinance package"""
+def get_quote(symbol):
+    """ Get the updated quote from yfinance fast_info
+
+    :param symbol: string stock symbol
+    :return: quote given option
+    """
+
+    company = Ticker(symbol)
+
+    price = company.financial_data['currentPrice']
+    price_currency = company.price['currency']
+    report_currency = company.financial_data['financialCurrency']
+
+    return price, price_currency, report_currency
+
+
+def get_forex(buy, sell):
+    """get exchange rate, buy means ask and sell means bid
+
+    :param buy: report currency
+    :param sell: price currency
+    """
+
+    try:
+        if buy != sell:
+            c = CurrencyRates()
+            return c.get_rate(buy, sell)
+        elif buy == "HKD" and sell == "MOP":
+            return 0.97  # MOP to HKD not available
+        else:
+            return 1
+    except:
+        print("fx_rate error: Currency Rates Not Available")
+        # will return None
+
+
+class YqData(Stock):
+    """Retrieves the data from yahooquery"""
 
     def __init__(self, symbol):
         """
-        :param symbol: string symbol of the stock
+        :param symbol: string ticker of the stock
         """
-        self.symbol = symbol
+        super().__init__(symbol)
         try:
             self.stock_data = Ticker(self.symbol)
         except KeyError:
             print("Check your stock ticker")
+        self.load_attributes()
+
+    def load_attributes(self):
+
         self.name = self.stock_data.quote_type['shortName']
         self.sector = self.stock_data.asset_profile['sector']
         self.price = [self.stock_data.financial_data['currentPrice'], self.stock_data.price['currency']]
@@ -23,17 +65,17 @@ class YqData:
         self.report_currency = self.stock_data.financial_data['financialCurrency']
         self.annual_bs = self.get_balance_sheet("annual")
         self.quarter_bs = self.get_balance_sheet("quarterly")
-        self.income_statement = self.get_income_statement()
-        self.cash_flow = self.get_cash_flow()
+        self.is_df = self.get_income_statement()
+        self.cf_df = self.get_cash_flow()
         # left most column contains the most recent data
-        self.most_recent_quarter = pd.to_datetime(datetime.fromtimestamp(self.quarter_bs.columns.values.tolist()[0])
+        self.most_recent_quarter = pd.to_datetime(dt.datetime.fromtimestamp(self.quarter_bs.columns.values.tolist()[0])
                                                   .strftime("%Y-%m-%d"))
         try:
-            self.dividends = -int(self.cash_flow.loc['CashDividendsPaid'][0]) / self.shares
+            self.last_dividend = -int(self.cf_df.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
-            self.dividends = 0
+            self.last_dividend = 0
         try:
-            self.buyback = -int(self.cash_flow.loc['RepurchaseOfCapitalStock'][0]) / self.shares
+            self.buyback = -int(self.cf_df.loc['RepurchaseOfCapitalStock'][0]) / self.shares
         except ZeroDivisionError:
             self.buyback = 0
 

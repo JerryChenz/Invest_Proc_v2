@@ -4,6 +4,7 @@ from yfinance import Tickers, Ticker, download
 import datetime as dt
 import time
 import random
+from smart_value.stock import *
 import smart_value.tools.stock_screener as screener
 
 '''
@@ -270,16 +271,23 @@ def output_data():
     screener.export_data(df)
 
 
-class YfData:
-    """Retrieves the data from YH Finance API and yfinance package"""
+class YfData(Stock):
+    """Retrieves the data from yfinance"""
 
-    def __init__(self, ticker):
-        self.ticker = ticker
+    def __init__(self, symbol):
+        """
+        :param symbol: string ticker of the stock
+        """
+        super().__init__(symbol)
         # yfinance
         try:
-            self.stock_data = Ticker(self.ticker)
+            self.stock_data = Ticker(self.symbol)
         except KeyError:
             print("Check your stock ticker")
+        self.load_attributes()
+
+    def load_attributes(self):
+
         self.name = self.stock_data.info['shortName']
         self.sector = self.stock_data.info['sector']
         self.price = [self.stock_data.fast_info['last_price'], self.stock_data.fast_info['currency']]
@@ -295,20 +303,22 @@ class YfData:
         # self.years_of_data = None
         self.annual_bs = self.get_balance_sheet("annual")
         self.quarter_bs = self.get_balance_sheet("quarter")
-        self.income_statement = self.get_income_statement()
-        self.cash_flow = self.get_cash_flow()
+        self.is_df = self.get_income_statement()
+        self.cf_df = self.get_cash_flow()
         if self.stock_data.info['mostRecentQuarter'] is None:
-            self.most_recent_quarter = pd.to_datetime(dt.datetime.fromtimestamp(self.stock_data.info['lastFiscalYearEnd'])
-                                                      .strftime("%Y-%m-%d"))
+            self.most_recent_quarter = pd.to_datetime(
+                dt.datetime.fromtimestamp(self.stock_data.info['lastFiscalYearEnd'])
+                .strftime("%Y-%m-%d"))
         else:
-            self.most_recent_quarter = pd.to_datetime(dt.datetime.fromtimestamp(self.stock_data.info['mostRecentQuarter'])
-                                                      .strftime("%Y-%m-%d"))
+            self.most_recent_quarter = pd.to_datetime(
+                dt.datetime.fromtimestamp(self.stock_data.info['mostRecentQuarter'])
+                .strftime("%Y-%m-%d"))
         try:
-            self.dividends = -int(self.cash_flow.loc['CashDividendsPaid'][0]) / self.shares
+            self.last_dividend = -int(self.cf_df.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
-            self.dividends = 0
+            self.last_dividend = 0
         try:
-            self.buyback = -int(self.cash_flow.loc['RepurchaseOfCapitalStock'][0]) / self.shares
+            self.buyback = -int(self.cf_df.loc['RepurchaseOfCapitalStock'][0]) / self.shares
         except ZeroDivisionError:
             self.buyback = 0
 
