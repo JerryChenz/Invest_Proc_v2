@@ -2,7 +2,6 @@ import glob
 import os
 import pathlib
 import pandas as pd
-import smart_value.financial_data.yf_data as yf_data
 import time
 import random
 from smart_value.financial_data import yf_data as yf
@@ -77,7 +76,9 @@ def merge_data(source):
         data = pd.read_json(file)  # read data frame from json file
         if source == "yf":
             # print(data)
-            data = yf_data.update_data(data)
+            data = yf.update_data(data)
+        elif source == "yq":
+            data = yq.update_data(data)
         else:
             data = data
         # print(data)
@@ -106,8 +107,8 @@ def export_data(df):
                           'investmentProperties_-1', 'longTermEquityInvestment_-1', 'longTermFinancialAssets_-1',
                           'netPPE', 'totalRevenue', 'costOfRevenue', 'sellingGeneralAndAdministration',
                           'netPPE_-1', 'totalRevenue_-1', 'costOfRevenue_-1', 'sellingGeneralAndAdministration_-1',
-                          'netIncomeCommonStockholders', 'interestPaidCfo', 'interestPaidCff',
-                          'netIncomeCommonStockholders_-1', 'interestPaidCfo_-1', 'interestPaidCff_-1',
+                          'interestExpense', 'netIncomeCommonStockholders',
+                          'interestExpense_-1', 'netIncomeCommonStockholders_-1',
                           'cfo', 'cfi', 'cff', 'endCashPosition',
                           'cfo_-1', 'cfi_-1', 'cff_-1', 'endCashPosition_-1']
 
@@ -121,4 +122,6 @@ def output_data(source):
     df = merge_data(source)
     if source == "yf":
         df = yf.clean_data(df)
+    elif source == "yq":
+        df = yq.clean_data(df)
     export_data(df)

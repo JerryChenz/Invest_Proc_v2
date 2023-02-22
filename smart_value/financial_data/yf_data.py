@@ -219,8 +219,8 @@ def clean_data(df):
          'Investment Properties_-1', 'Long Term Equity Investment_-1', 'Investmentin Financial Assets_-1',
          'Net PPE', 'Total Revenue', 'Cost Of Revenue', 'Selling General And Administration',
          'Net PPE_-1', 'Total Revenue_-1', 'Cost Of Revenue_-1', 'Selling General And Administration_-1',
-         'Net Income Common Stockholders', 'Interest Paid Cfo', 'Interest Paid Cff',
-         'Net Income Common Stockholders_-1', 'Interest Paid Cfo_-1', 'Interest Paid Cff_-1',
+         'Interest Expense', 'Net Income Common Stockholders',
+         'Interest Expense_-1', 'Net Income Common Stockholders_-1',
          'Operating Cash Flow', 'Investing Cash Flow', 'Financing Cash Flow', 'End Cash Position',
          'Operating Cash Flow_-1', 'Investing Cash Flow_-1', 'Financing Cash Flow_-1', 'End Cash Position_-1']]
 
@@ -240,6 +240,13 @@ class YfData(Stock):
             self.stock_data = Ticker(self.symbol)
         except KeyError:
             print("Check your stock ticker")
+        # self.avg_gross_margin = None
+        # self.avg_ebit_margin = None
+        # self.avg_net_margin = None
+        # self.avg_sales_growth = None
+        # self.avg_ebit_growth = None
+        # self.avg_ni_growth = None
+        # self.years_of_data = None
         self.load_attributes()
 
     def load_attributes(self):
@@ -250,25 +257,10 @@ class YfData(Stock):
         self.exchange = self.stock_data.fast_info['exchange']
         self.shares = self.stock_data.info['sharesOutstanding']
         self.report_currency = self.stock_data.info['financialCurrency']
-        # self.avg_gross_margin = None
-        # self.avg_ebit_margin = None
-        # self.avg_net_margin = None
-        # self.avg_sales_growth = None
-        # self.avg_ebit_growth = None
-        # self.avg_ni_growth = None
-        # self.years_of_data = None
         self.annual_bs = self.get_balance_sheet("annual")
         self.quarter_bs = self.get_balance_sheet("quarter")
         self.is_df = self.get_income_statement()
         self.cf_df = self.get_cash_flow()
-        if self.stock_data.info['mostRecentQuarter'] is None:
-            self.most_recent_quarter = pd.to_datetime(
-                dt.datetime.fromtimestamp(self.stock_data.info['lastFiscalYearEnd'])
-                .strftime("%Y-%m-%d"))
-        else:
-            self.most_recent_quarter = pd.to_datetime(
-                dt.datetime.fromtimestamp(self.stock_data.info['mostRecentQuarter'])
-                .strftime("%Y-%m-%d"))
         try:
             self.last_dividend = -int(self.cf_df.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
@@ -277,6 +269,15 @@ class YfData(Stock):
             self.buyback = -int(self.cf_df.loc['RepurchaseOfCapitalStock'][0]) / self.shares
         except ZeroDivisionError:
             self.buyback = 0
+        self.last_fy = self.stock_data.info['lastFiscalYearEnd']
+        if self.stock_data.info['mostRecentQuarter'] is None:
+            self.most_recent_quarter = pd.to_datetime(
+                dt.datetime.fromtimestamp(self.stock_data.info['lastFiscalYearEnd'])
+                .strftime("%Y-%m-%d"))
+        else:
+            self.most_recent_quarter = pd.to_datetime(
+                dt.datetime.fromtimestamp(self.stock_data.info['mostRecentQuarter'])
+                .strftime("%Y-%m-%d"))
 
     def get_balance_sheet(self, option):
         """Returns a DataFrame with selected balance sheet data"""

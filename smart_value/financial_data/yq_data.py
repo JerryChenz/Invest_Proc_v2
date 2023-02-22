@@ -19,30 +19,34 @@ def download_yq(symbols, attempt, failure_list):
     # external API error re-try
     max_try = 2
 
-    info_col = ['shortName', 'sector', 'industry', 'market', 'sharesOutstanding', 'financialCurrency',
-                'lastFiscalYearEnd', 'mostRecentQuarter']
-    yf_companies = Ticker(symbols)
+    stock_data = Ticker(symbols)
     symbol_list = symbols.split(" ")
     while symbol_list:
         symbol = symbol_list.pop(0)  # pop from the beginning
         try:
             # introductory information
-            info = pd.Series(yf_companies.tickers[symbol].info)
-            # info['currency'] = companies.tickers[symbol].fast_info['currency']  # get it when updating price
-            # info['exchange'] = companies.tickers[symbol].fast_info['exchange']  # Use market instead
-            info = info.loc[info_col]
+            info = {'shortName': stock_data.quote_type[symbol]['shortName'],
+                    'sector': stock_data.asset_profile[symbol]['sector'],
+                    'industry': stock_data.asset_profile[symbol]['industry'],
+                    'market': stock_data.quote_type[symbol]['exchange'],
+                    'sharesOutstanding': stock_data.key_stats[symbol]['sharesOutstanding'],
+                    'financialCurrency': stock_data.financial_data[symbol]['financialCurrency']}
+            info_df = pd.DataFrame.from_dict(info, orient='index').T
+
             # Balance Sheet
-            bs_df = yf_companies.tickers[symbol].quarterly_balance_sheet
+            bs_df = stock_data.balance_sheet(frequency="q", trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
+            info_df['mostRecentQuarter'] = bs_df.columns[0]
             bs_df = format_data(bs_df)
 
             # Income statement
-            is_df = yf_companies.tickers[symbol].financials
+            is_df = stock_data.income_statement(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
+            info_df['lastFiscalYearEnd'] = is_df.columns[0]
             is_df = format_data(is_df)
             # # Cash Flow statement
-            cf_df = yf_companies.tickers[symbol].cashflow
+            cf_df = stock_data.cash_flow(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
             cf_df = format_data(cf_df)
             # Create one big one-row stock_df by using side-by-side merge
-            stock_df = pd.concat([info, bs_df, is_df, cf_df])
+            stock_df = pd.concat([info_df.T, bs_df, is_df, cf_df])
             stock_df = stock_df.transpose()
             stock_df['ticker'] = symbol
             stock_df.set_index('ticker').to_json(json_dir / f"{symbol}_data.json")
@@ -104,6 +108,60 @@ def get_quote(symbol):
     return price, price_currency, report_currency
 
 
+def update_data(data):
+    """Update the price and currency info"""
+
+    ticker = data.index.values.tolist()[0]
+    quote = yq.get_quote(ticker)
+    data['price'] = quote[0]
+    data['priceCurrency'] = quote[1]
+    # Forex
+    data['fxRate'] = get_forex(data['financialCurrency'].values[:1][0], data['priceCurrency'].values[:1][0])
+
+    return data
+
+
+def clean_data(df):
+    """Clean up the dataframe"""
+
+    # Exclude the rows that has missing financial data
+    df = df[df['TotalAssets'].notna() & df['financialCurrency'].notna()]
+    # print(df.to_string())
+    # Preparing the data
+    df['lastFiscalYearEnd'] = pd.to_datetime(df['lastFiscalYearEnd'])
+    df['lastDividend'] = - df['CashDividendsPaid'] / df['sharesOutstanding']
+    df['lastBuyback'] = - df['RepurchaseOfCapitalStock'] / df['sharesOutstanding']
+    df['NoncurrentLiability'] = df['TotalAssets'] - df['TotalEquityGrossMinorityInterest']
+    df['NoncurrentLiability_-1'] = df['TotalAssets_-1'] - df['TotalEquityGrossMinorityInterest_-1']
+    df['NoncommonInterest'] = df['TotalEquityGrossMinorityInterest'] - df['CommonStockEquity']
+    df['NoncommonInterest_-1'] = df['TotalEquityGrossMinorityInterest_-1'] - df['CommonStockEquity_-1']
+
+    df = df.fillna(0)
+    df = df[
+        ['shortName', 'sector', 'industry', 'market', 'price', 'priceCurrency', 'sharesOutstanding',
+         'financialCurrency', 'fxRate', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend', 'lastBuyback',
+         'TotalAssets', 'CurrentAssets', 'CurrentLiabilities',
+         'TotalAssets_-1', 'CurrentAssets_-1', 'CurrentLiabilities_-1',
+         'CashAndCashEquivalents', 'OtherShortTermInvestments',
+         'CashAndCashEquivalents_-1', 'OtherShortTermInvestments_-1',
+         'CurrentDebtAndCapitalLeaseObligation', 'CurrentCapitalLeaseObligation',
+         'CurrentDebtAndCapitalLeaseObligation_-1', 'CurrentCapitalLeaseObligation_-1',
+         'LongTermDebtAndCapitalLeaseObligation', 'LongTermCapitalLeaseObligation',
+         'LongTermDebtAndCapitalLeaseObligation_-1', 'LongTermCapitalLeaseObligation_-1',
+         'TotalEquityGrossMinorityInterest', 'CommonStockEquity',
+         'TotalEquityGrossMinorityInterest_-1', 'CommonStockEquity_-1',
+         'InvestmentProperties', 'LongTermEquityInvestment', 'InvestmentinFinancialAssets',
+         'InvestmentProperties_-1', 'LongTermEquityInvestment_-1', 'InvestmentinFinancialAssets_-1',
+         'NetPPE', 'TotalRevenue', 'CostOfRevenue', 'SellingGeneralAndAdministration',
+         'NetPPE_-1', 'TotalRevenue_-1', 'CostOfRevenue_-1', 'SellingGeneralAndAdministration_-1',
+         'InterestExpense', 'NetIncomeCommonStockholders',
+         'InterestExpense_-1', 'NetIncomeCommonStockholders_-1',
+         'OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow', 'EndCashPosition',
+         'OperatingCashFlow_-1', 'InvestingCashFlow_-1', 'FinancingCashFlow_-1', 'EndCashPosition_-1']]
+
+    return df
+
+
 def get_forex(buy, sell):
     """get exchange rate, buy means ask and sell means bid
 
@@ -151,8 +209,6 @@ class YqData(Stock):
         self.quarter_bs = self.get_balance_sheet("quarterly")
         self.is_df = self.get_income_statement()
         self.cf_df = self.get_cash_flow()
-        # left most column contains the most recent data
-        self.most_recent_quarter = self.quarter_bs.columns[0]  # .strftime("%Y-%m-%d")
         try:
             self.last_dividend = -int(self.cf_df.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
@@ -161,6 +217,9 @@ class YqData(Stock):
             self.buyback = -int(self.cf_df.loc['RepurchaseOfCapitalStock'][0]) / self.shares
         except ZeroDivisionError:
             self.buyback = 0
+        # left most column contains the most recent data
+        self.last_fy = self.annual_bs.columns[0]
+        self.most_recent_quarter = self.quarter_bs.columns[0]
 
     def get_balance_sheet(self, option="annual"):
         """Returns a DataFrame with selected balance sheet data
