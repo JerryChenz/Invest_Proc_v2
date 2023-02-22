@@ -58,7 +58,7 @@ def read_opportunity(opportunities_path):
 
         if r_stock.match(str(opportunities_path)):
             # Update the models first in the opportunities folder
-            company = smart_value.stock.Stock(dash_sheet.range('C3').value, "yf_quote")
+            company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yf_quote")
             smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
             xl_book.save(opportunities_path)  # xls must be saved to update the values
             opportunity = read_stock(dash_sheet)

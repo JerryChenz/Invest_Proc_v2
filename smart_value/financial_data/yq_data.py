@@ -120,7 +120,7 @@ class YqData(Stock):
 
         bs_index = ['TotalAssets', 'CurrentAssets', 'CurrentLiabilities', 'CurrentDebtAndCapitalLeaseObligation',
                     'CurrentCapitalLeaseObligation', 'LongTermDebtAndCapitalLeaseObligation',
-                    'LongTermCapitalLeaseObligation', 'TotalEquityGrossMinorityInterest', 'MinorityInterest',
+                    'LongTermCapitalLeaseObligation', 'TotalEquityGrossMinorityInterest', 'CommonStockEquity',
                     'CashAndCashEquivalents', 'OtherShortTermInvestments', 'InvestmentProperties',
                     'LongTermEquityInvestment', 'InvestmentinFinancialAssets', 'NetPPE']
 
@@ -208,9 +208,9 @@ class YqData(Stock):
         # reverses the dataframe with .iloc[:, ::-1]
         cash_flow = self.stock_data.cash_flow(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
         # Start of Cleaning: make sure the data has all the required indexes
-        dummy = {"Dummy": [None, None, None, None, None]}
+        dummy = {"Dummy": [None, None, None, None, None, None]}
         cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow',
-                    'CashDividendsPaid', 'RepurchaseOfCapitalStock']
+                    'CashDividendsPaid', 'RepurchaseOfCapitalStock', 'EndCashPosition']
         dummy_df = pd.DataFrame(dummy, index=cf_index)
         clean_cf = dummy_df.join(cash_flow)
         cf_df = clean_cf.loc[cf_index]

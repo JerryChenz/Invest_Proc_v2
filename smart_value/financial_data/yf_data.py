@@ -418,9 +418,9 @@ class YfData(Stock):
 
         cash_flow = self.stock_data.get_cashflow()
         # Start of Cleaning: make sure the data has all the required indexes
-        dummy = {"Dummy": [None, None, None, None, None]}
+        dummy = {"Dummy": [None, None, None, None, None, None]}
         cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow',
-                    'CashDividendsPaid', 'RepurchaseOfCapitalStock']
+                    'CashDividendsPaid', 'RepurchaseOfCapitalStock', 'EndCashPosition']
         dummy_df = pd.DataFrame(dummy, index=cf_index)
         clean_cf = dummy_df.join(cash_flow)
         cf_df = clean_cf.loc[cf_index]
