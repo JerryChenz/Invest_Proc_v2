@@ -5,7 +5,6 @@ import os
 from datetime import datetime
 import re
 from smart_value.stock import *
-import smart_value.tools
 from smart_value.financial_data import yf_data as yf
 from smart_value.financial_data import yq_data as yq
 
@@ -229,7 +228,7 @@ class StockModel(Stock):
                 self.fx_rate = yq.get_forex(report_currency, price_currency)
 
             elif self.source == "fmp":
-                self.load_from_fmp()
+                pass
 
             else:
                 raise KeyError(f"The source keyword {self.source} is invalid!")
@@ -267,8 +266,3 @@ class StockModel(Stock):
 
         self.price = [market_price, price_currency]
         self.fx_rate = yf.get_forex(report_currency, price_currency)
-
-    def load_from_fmp(self):
-        """Scrap the financial_data from FMP API"""
-
-        pass
