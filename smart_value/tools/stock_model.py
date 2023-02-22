@@ -82,7 +82,7 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     """
 
     if new_bool:
-        dash_sheet.range('C3').value = stock.asset_code
+        dash_sheet.range('C3').value = stock.symbol
         dash_sheet.range('C4').value = stock.name
         dash_sheet.range('C5').value = datetime.today().strftime('%Y-%m-%d')
         dash_sheet.range('I3').value = stock.exchange

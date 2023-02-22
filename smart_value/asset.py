@@ -3,7 +3,7 @@ class Asset:
     """Parent class"""
 
     def __init__(self, security_code):
-        self.asset_code = security_code
+        self.symbol = security_code
         self.name = None
         self.exchange = None
         self.price = None

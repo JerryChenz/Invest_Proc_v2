@@ -270,7 +270,7 @@ def output_data():
     screener.export_data(df)
 
 
-class Financials:
+class YfData:
     """Retrieves the data from YH Finance API and yfinance package"""
 
     def __init__(self, ticker):

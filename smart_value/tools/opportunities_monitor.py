@@ -118,7 +118,7 @@ def update_opportunities(pipline_book, op_list):
 
     r = 5
     for a in op_list:
-        monitor_sheet.range((r, 2)).value = a.asset_code
+        monitor_sheet.range((r, 2)).value = a.symbol
         monitor_sheet.range((r, 3)).value = a.name
         monitor_sheet.range((r, 4)).value = a.sector
         monitor_sheet.range((r, 5)).value = a.exchange
@@ -149,7 +149,7 @@ def update_holdings(pipline_book, op_list):
     k = 7
     for a in op_list:
         if a.total_units:
-            holding_sheet.range((k, 2)).value = a.asset_code
+            holding_sheet.range((k, 2)).value = a.symbol
             holding_sheet.range((k, 3)).value = a.name
             holding_sheet.range((k, 4)).value = a.exchange
             holding_sheet.range((k, 5)).value = a.price_currency

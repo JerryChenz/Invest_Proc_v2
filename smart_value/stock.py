@@ -39,12 +39,12 @@ class Stock(Asset):
         """data source selector."""
 
         if self.source == "yf":
-            ticker_data = yf.Financials(self.asset_code)
+            ticker_data = yf.YfData(self.symbol)
             self.load_yahoo(ticker_data)
         elif self.source == "yf_quote":
             self.load_yf_quote()
         elif self.source == "yq":
-            ticker_data = yq.YqData(self.asset_code)
+            ticker_data = yq.YqData(self.symbol)
             self.load_yahoo(ticker_data)
         elif self.source == "fmp":
             self.load_from_fmp()
@@ -76,9 +76,9 @@ class Stock(Asset):
     def load_yf_quote(self):
         """Scrap the financial_data from yfinance API"""
 
-        market_price = yf.get_quote(self.asset_code, "last_price")
-        price_currency = yf.get_quote(self.asset_code, "currency")
-        report_currency = yf.get_info(self.asset_code, "financialCurrency")
+        market_price = yf.get_quote(self.symbol, "last_price")
+        price_currency = yf.get_quote(self.symbol, "currency")
+        report_currency = yf.get_info(self.symbol, "financialCurrency")
 
         self.price = [market_price, price_currency]
         self.fx_rate = yf.get_forex(report_currency, price_currency)
@@ -113,7 +113,7 @@ class Stock(Asset):
                                  'SellingGeneralAndAdministration', 'InterestExpense', 'NetIncomeCommonStockholders',
                                  'GrossMargin', 'EBIT', 'EbitMargin', 'NetMargin']
         # ticker and dividend
-        stock_summary.insert(loc=0, column='Ticker', value=self.asset_code)
+        stock_summary.insert(loc=0, column='Ticker', value=self.symbol)
         stock_summary.insert(loc=1, column='Name', value=self.name)
         stock_summary.insert(loc=2, column='Sector', value=self.sector)
         stock_summary.insert(loc=3, column='Exchange', value=self.exchange)
@@ -144,4 +144,4 @@ class Stock(Asset):
         :param df: a DataFrame containing stock data
         """
 
-        df.to_csv(f'{self.asset_code}_{df.name}.csv', sep=',', encoding='utf-8')
+        df.to_csv(f'{self.symbol}_{df.name}.csv', sep=',', encoding='utf-8')
