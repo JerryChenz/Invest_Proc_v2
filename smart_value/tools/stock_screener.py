@@ -113,3 +113,12 @@ def export_data(df):
 
     df.columns = standardized_names
     df.to_csv(screener_folder / 'screener_summary.csv')
+
+
+def output_data(source):
+    """Merge, clean, standardize names, and export data from yfinance"""
+
+    df = merge_data(source)
+    if source == "yf":
+        df = yf.clean_data(df)
+    export_data(df)

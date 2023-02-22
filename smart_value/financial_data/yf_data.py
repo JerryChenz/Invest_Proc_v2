@@ -227,14 +227,6 @@ def clean_data(df):
     return df
 
 
-def output_data():
-    """Merge, clean, standardize names, and export data from yfinance"""
-
-    df = merge_data("yf")
-    df = clean_data(df)
-    export_data(df)
-
-
 class YfData(Stock):
     """Retrieves the data from yfinance"""
 
