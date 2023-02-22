@@ -2,16 +2,24 @@ from datetime import datetime
 import smart_value
 
 
-def gen_val_xlsx(ticker):
-    """generate or update a valuation file with argument, ticker"""
+def gen_val_xlsx(ticker, source):
+    """generate or update a valuation file with argument, ticker
 
-    smart_value.tools.stock_model.new_stock_model(ticker)
+    :param ticker: string ticker symbol
+    :param source: String data source selector - "yf", "yq"
+    """
+
+    smart_value.tools.stock_model.new_stock_model(ticker, source)
 
 
-def update_val_xlsx(ticker):
-    """Update dashboard only, not touching the data tab"""
+def update_val_xlsx(ticker, source):
+    """Update dashboard only, not touching the data tab
+    
+    :param ticker: string ticker symbol
+    :param source: String data source selector - "yf", "yq"
+    """
 
-    smart_value.tools.stock_model.update_dash(ticker)
+    smart_value.tools.stock_model.update_dash(ticker, source)
 
 
 def days_between(d1, d2):
@@ -23,5 +31,5 @@ def days_between(d1, d2):
 if __name__ == '__main__':
     stare_list = ['1997.HK']
     for s in stare_list:
-        gen_val_xlsx(s)
-        # update_val_xlsx(s)
+        gen_val_xlsx(s, "yq")
+        # update_val_xlsx(s, "yq")

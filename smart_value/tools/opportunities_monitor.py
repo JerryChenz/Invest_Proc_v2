@@ -87,7 +87,7 @@ def read_stock(dash_sheet):
     company.realizable_value = dash_sheet.range('D14').value
     company.nonop_assets = dash_sheet.range('F21').value
     company.periodic_payment = dash_sheet.range('C7').value
-    company.next_result = dash_sheet.range('C6').value
+    company.last_result = dash_sheet.range('C6').value
     return company
 
 
@@ -132,7 +132,7 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 13)).value = a.realizable_value
         monitor_sheet.range((r, 14)).value = a.navps
         monitor_sheet.range((r, 15)).value = a.periodic_payment
-        monitor_sheet.range((r, 16)).value = a.next_result
+        monitor_sheet.range((r, 16)).value = a.last_result
         r += 1
 
 

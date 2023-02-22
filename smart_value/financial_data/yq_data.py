@@ -25,12 +25,9 @@ class YqData:
         self.quarter_bs = self.get_balance_sheet("quarterly")
         self.income_statement = self.get_income_statement()
         self.cash_flow = self.get_cash_flow()
-        if self.stock_data.info['mostRecentQuarter'] is None:
-            self.next_earnings = pd.to_datetime(datetime.fromtimestamp(self.stock_data.info['nextFiscalYearEnd'])
-                                                .strftime("%Y-%m-%d")) - pd.DateOffset(months=6)
-        else:
-            self.next_earnings = pd.to_datetime(datetime.fromtimestamp(self.stock_data.info['mostRecentQuarter'])
-                                                .strftime("%Y-%m-%d")) + pd.DateOffset(months=6)
+        # left most column contains the most recent data
+        self.most_recent_quarter = pd.to_datetime(datetime.fromtimestamp(self.quarter_bs.columns.values.tolist()[0])
+                                                  .strftime("%Y-%m-%d"))
         try:
             self.dividends = -int(self.cash_flow.loc['CashDividendsPaid'][0]) / self.shares
         except ZeroDivisionError:
@@ -45,7 +42,7 @@ class YqData:
 
         :param option: annual or quarterly
 
-        balance sheet attributes:
+        balance sheet keys:
           ['asOfDate', 'periodType', 'currencyCode', 'AccountsPayable',
                'AccountsReceivable', 'AccumulatedDepreciation',
                'AllowanceForDoubtfulAccountsReceivable', 'AvailableForSaleSecurities',
@@ -86,9 +83,10 @@ class YqData:
                     'LongTermEquityInvestment', 'InvestmentinFinancialAssets', 'NetPPE']
 
         if option == "annual":
-            balance_sheet = self.stock_data.balance_sheet(trailing=False).transpose()
+            # reverses the dataframe with .iloc[:, ::-1]
+            balance_sheet = self.stock_data.balance_sheet(trailing=False).T.iloc[:, ::-1]
         else:
-            balance_sheet = self.stock_data.balance_sheet(frequency="q", trailing=False).transpose()
+            balance_sheet = self.stock_data.balance_sheet(frequency="q", trailing=False).T.iloc[:, ::-1]
         # Start of Cleaning: make sure the data has all the required indexes
         dummy_df = pd.DataFrame(dummy, index=bs_index)
         clean_bs = dummy_df.join(balance_sheet)
@@ -101,7 +99,7 @@ class YqData:
     def get_income_statement(self):
         """Returns a DataFrame with selected income statement data
 
-        income statement attributes:
+        income statement keys:
         ['asOfDate', 'periodType', 'currencyCode', 'BasicAverageShares',
        'BasicEPS', 'CostOfRevenue', 'DilutedAverageShares', 'DilutedEPS',
        'DilutedNIAvailtoComStockholders', 'EBIT',
@@ -124,7 +122,9 @@ class YqData:
        'TotalUnusualItemsExcludingGoodwill', 'WriteOff']
         """
 
-        income_statement = self.stock_data.get_income_stmt()
+        # reverses the dataframe with .iloc[:, ::-1]
+        income_statement = self.stock_data.income_statement(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
+        print(income_statement.index)
         # Start of Cleaning: make sure the data has all the required indexes
         dummy = {"Dummy": [None, None, None, None, None]}
         is_index = ['TotalRevenue', 'CostOfRevenue', 'SellingGeneralAndAdministration', 'InterestExpense',
@@ -134,54 +134,37 @@ class YqData:
         is_df = clean_is.loc[is_index]
         # Ending of Cleaning: drop the dummy column after join
         is_df.drop('Dummy', inplace=True, axis=1)
-        is_df = is_df.fillna(0).transpose()
-        try:
-            is_df['Gross_margin'] = is_df['CostOfRevenue'] / is_df['TotalRevenue'] * 100
-            is_df['Gross_margin'] = is_df['Gross_margin'].astype(float).round(decimals=2)
-        except ZeroDivisionError:
-            is_df['Gross_margin'] = 0
-        try:
-            is_df['Ebit'] = is_df['TotalRevenue'] - is_df['CostOfRevenue'] - is_df['SellingGeneralAndAdministration']
-        except ZeroDivisionError:
-            is_df['Ebit'] = 0
-        try:
-            is_df['Ebit_margin'] = is_df['Ebit'] / is_df['TotalRevenue'] * 100
-            is_df['Ebit_margin'] = is_df['Ebit_margin'].astype(float).round(decimals=2)
-        except ZeroDivisionError:
-            is_df['Ebit_margin'] = 0
-        try:
-            is_df['Net_margin'] = is_df['NetIncomeCommonStockholders'] / is_df['TotalRevenue'] * 100
-            is_df['Net_margin'] = is_df['Net_margin'].astype(float).round(decimals=2)
-        except ZeroDivisionError:
-            is_df['Net_margin'] = 0
+        is_df = is_df.fillna(0)
 
-        self.avg_gross_margin = is_df["Gross_margin"].mean()
-        self.avg_ebit_margin = is_df["Ebit_margin"].mean()
-        self.avg_net_margin = is_df["Net_margin"].mean()
-        try:
-            self.avg_sales_growth = round((is_df.iloc[::-1]['TotalRevenue']
-                                           .pct_change().dropna()).mean().astype(float) * 100, 2)
-        except AttributeError:
-            # empty TotalRevenue bug
-            self.avg_sales_growth = 0
-        try:
-            self.avg_ebit_growth = round((is_df.iloc[::-1]['Ebit']
-                                          .pct_change().dropna()).mean().astype(float) * 100, 2)
-        except AttributeError:
-            self.avg_ebit_growth = 0
-        try:
-            self.avg_ni_growth = round((is_df.iloc[::-1]['NetIncomeCommonStockholders']
-                                        .pct_change().dropna()).mean().astype(float) * 100, 2)
-        except AttributeError:
-            self.avg_ni_growth = 0
-        self.years_of_data = len(is_df['TotalRevenue'])
-
-        return is_df.transpose()
+        return is_df
 
     def get_cash_flow(self):
-        """Returns a DataFrame with selected Cash flow statement data"""
+        """Returns a DataFrame with selected Cash flow statement data
 
-        cash_flow = self.stock_data.cash_flow(trailing=False)
+        cash flow statement keys:
+        ['periodType', 'currencyCode', 'AmortizationCashFlow',
+       'BeginningCashPosition', 'CapitalExpenditure', 'CashDividendsPaid',
+       'ChangeInCashSupplementalAsReported', 'ChangeInInventory',
+       'ChangeInOtherCurrentAssets', 'ChangeInPayable', 'ChangeInReceivables',
+       'ChangeInWorkingCapital', 'ChangesInCash', 'CommonStockDividendPaid',
+       'CommonStockIssuance', 'CommonStockPayments', 'Depreciation',
+       'DepreciationAndAmortization', 'EffectOfExchangeRateChanges',
+       'EndCashPosition', 'FinancingCashFlow', 'FreeCashFlow',
+       'GainLossOnInvestmentSecurities', 'GainLossOnSaleOfPPE',
+       'InterestPaidCFF', 'InterestReceivedCFI', 'InvestingCashFlow',
+       'IssuanceOfCapitalStock', 'LongTermDebtPayments',
+       'NetBusinessPurchaseAndSale', 'NetCommonStockIssuance', 'NetIncome',
+       'NetIncomeFromContinuingOperations', 'NetInvestmentPurchaseAndSale',
+       'NetIssuancePaymentsOfDebt', 'NetLongTermDebtIssuance',
+       'NetOtherFinancingCharges', 'NetOtherInvestingChanges',
+       'NetPPEPurchaseAndSale', 'OperatingCashFlow', 'OtherNonCashItems',
+       'PurchaseOfBusiness', 'PurchaseOfInvestment', 'PurchaseOfPPE',
+       'RepaymentOfDebt', 'RepurchaseOfCapitalStock', 'SaleOfInvestment',
+       'SaleOfPPE', 'StockBasedCompensation', 'TaxesRefundPaid']
+        """
+
+        # reverses the dataframe with .iloc[:, ::-1]
+        cash_flow = self.stock_data.cash_flow(trailing=False).set_index('asOfDate').T.iloc[:, ::-1]
         # Start of Cleaning: make sure the data has all the required indexes
         dummy = {"Dummy": [None, None, None, None, None]}
         cf_index = ['OperatingCashFlow', 'InvestingCashFlow', 'FinancingCashFlow',

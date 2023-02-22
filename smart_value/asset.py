@@ -17,7 +17,7 @@ class Asset:
         self.nonop_assets = None
         self.periodic_payment = None  # dividend for stocks and coupon for bonds
         self.last_fy = None  # last coupon date for bonds
-        self.next_result = None
+        self.last_result = None # may not be the same as last_fy
         self.total_units = None
         self.unit_cost = None
         self.is_updated = None

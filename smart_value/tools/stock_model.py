@@ -7,10 +7,11 @@ import re
 import smart_value.stock
 
 
-def new_stock_model(ticker):
+def new_stock_model(ticker, source):
     """Creates a new model if it doesn't already exist, then update.
 
     :param ticker: the string ticker of the stock
+    :param source: String data source selector
     :raises FileNotFoundError: raises an exception when there is an error related to the model files or path
     """
 
@@ -48,20 +49,21 @@ def new_stock_model(ticker):
             new_bool = True
             shutil.copy(template_path_list[0], model_path)
         # update the model
-        update_stock_model(ticker, model_name, model_path, new_bool)
+        update_stock_model(ticker, model_name, model_path, new_bool, source)
 
 
-def update_stock_model(ticker, model_name, model_path, new_bool):
+def update_stock_model(ticker, model_name, model_path, new_bool, source):
     """Update the model.
 
     :param ticker: the string ticker of the stock
     :param model_name: the model file name
     :param model_path: the model file path
+    :param source: String data source selector
     :param new_bool: False if there is a model exists, true otherwise
     """
     # update the new model
     print(f'Updating {model_name}...')
-    company = smart_value.stock.Stock(ticker, "yf")  # uses yahoo finance data by default
+    company = smart_value.stock.Stock(ticker, source)  # uses yahoo finance data by default
 
     with xlwings.App(visible=False) as app:
         model_xl = app.books.open(model_path)
@@ -149,10 +151,11 @@ def update_data(data_sheet, stock, new_bool=False):
 
 
 # update dash only, not touching the data tab
-def update_dash(ticker):
+def update_dash(ticker, source):
     """Update the dashboard of the model.
 
     :param ticker: the string ticker of the stock
+    :param source: String data source selector
     :raises FileNotFoundError: raises an exception when there is an error related to the model files or path
     """
 
@@ -168,7 +171,7 @@ def update_dash(ticker):
             with xlwings.App(visible=False) as app:
                 xl_book = app.books.open(p)
                 dash_sheet = xl_book.sheets('Dashboard')
-                company = smart_value.stock.Stock(ticker, "yf")
+                company = smart_value.stock.Stock(ticker, source)
                 smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
                 xl_book.save(p)
                 xl_book.close()

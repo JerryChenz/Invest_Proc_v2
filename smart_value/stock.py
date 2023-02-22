@@ -1,6 +1,6 @@
 from smart_value.asset import *
-from smart_value.financial_data import yahoo_data as yf
-from smart_value.financial_data import yf_data
+from smart_value.financial_data import yf_data as yf
+from smart_value.financial_data import yq_data as yq
 import pandas as pd
 
 # The stock summary should follow this format
@@ -10,10 +10,10 @@ standardized_summary = []
 class Stock(Asset):
     """a type of Securities"""
 
-    def __init__(self, asset_code, source=""):
+    def __init__(self, asset_code, source):
         """
         :param asset_code: string ticker of the stock
-        :param source: data source selector. "yf" selects yahoo finance
+        :param source: data source selector
         """
         super().__init__(asset_code)
 
@@ -23,13 +23,13 @@ class Stock(Asset):
         self.quarter_bs = None  # last quarter balance sheet data
         self.cf_df = None
         self.is_df = None
-        self.avg_gross_margin = None
-        self.avg_sales_growth = None
-        self.avg_ebit_margin = None
-        self.avg_ebit_growth = None
-        self.avg_net_margin = None
-        self.avg_ni_growth = None
-        self.years_of_data = None
+        # self.avg_gross_margin = None
+        # self.avg_sales_growth = None
+        # self.avg_ebit_margin = None
+        # self.avg_ebit_growth = None
+        # self.avg_net_margin = None
+        # self.avg_ni_growth = None
+        # self.years_of_data = None
         self.fx_rate = None
         self.buyback = None
         self.source = source
@@ -39,18 +39,23 @@ class Stock(Asset):
         """data source selector."""
 
         if self.source == "yf":
-            self.load_from_yf()
+            ticker_data = yf.Financials(self.asset_code)
+            self.load_yahoo(ticker_data)
         elif self.source == "yf_quote":
             self.load_yf_quote()
+        elif self.source == "yq":
+            ticker_data = yq.YqData(self.asset_code)
+            self.load_yahoo(ticker_data)
         elif self.source == "fmp":
             self.load_from_fmp()
         else:
             pass  # Other sources of data to-be-implemented
 
-    def load_from_yf(self):
-        """Scrap the financial_data from yfinance API"""
+    def load_yahoo(self, ticker_data):
+        """Scrap the financial_data from yfinance API
 
-        ticker_data = yf.Financials(self.asset_code)
+        :param ticker_data: financial data object
+        """
 
         self.name = ticker_data.name
         self.sector = ticker_data.sector
@@ -58,31 +63,25 @@ class Stock(Asset):
         self.exchange = ticker_data.exchange
         self.shares = ticker_data.shares
         self.report_currency = ticker_data.report_currency
-        self.fx_rate = yf_data.get_forex(self.report_currency, self.price[1])
+        self.fx_rate = yf.get_forex(self.report_currency, self.price[1])
         self.periodic_payment = ticker_data.dividends
         self.buyback = ticker_data.buyback
         self.annual_bs = ticker_data.annual_bs
         self.quarter_bs = ticker_data.quarter_bs
         self.cf_df = ticker_data.cash_flow
         self.is_df = ticker_data.income_statement
-        self.avg_gross_margin = ticker_data.avg_gross_margin
-        self.avg_sales_growth = ticker_data.avg_sales_growth
-        self.avg_ebit_margin = ticker_data.avg_ebit_margin
-        self.avg_ebit_growth = ticker_data.avg_ebit_growth
-        self.avg_net_margin = ticker_data.avg_net_margin
-        self.avg_ni_growth = ticker_data.avg_ni_growth
-        self.years_of_data = ticker_data.years_of_data
         self.last_fy = ticker_data.annual_bs.columns[0]
+        self.last_result = ticker_data.most_recent_quarter
 
     def load_yf_quote(self):
         """Scrap the financial_data from yfinance API"""
 
-        market_price = yf_data.get_quote(self.asset_code, "last_price")
-        price_currency = yf_data.get_quote(self.asset_code, "currency")
-        report_currency = yf_data.get_info(self.asset_code, "financialCurrency")
+        market_price = yf.get_quote(self.asset_code, "last_price")
+        price_currency = yf.get_quote(self.asset_code, "currency")
+        report_currency = yf.get_info(self.asset_code, "financialCurrency")
 
         self.price = [market_price, price_currency]
-        self.fx_rate = yf_data.get_forex(report_currency, price_currency)
+        self.fx_rate = yf.get_forex(report_currency, price_currency)
 
     def load_from_fmp(self):
         """Scrap the financial_data from FMP API"""
@@ -129,13 +128,13 @@ class Stock(Asset):
         stock_summary['CFO'] = self.cf_df.loc['OperatingCashFlow']
         stock_summary['CFI'] = self.cf_df.loc['InvestingCashFlow']
         stock_summary['CFF'] = self.cf_df.loc['FinancingCashFlow']
-        stock_summary['Avg_Gross_margin'] = self.avg_gross_margin
-        stock_summary['Avg_sales_growth'] = self.avg_sales_growth
-        stock_summary['Avg_ebit_margin'] = self.avg_ebit_margin
-        stock_summary['Avg_ebit_growth'] = self.avg_ebit_growth
-        stock_summary['Avg_net_margin'] = self.avg_net_margin
-        stock_summary['Avg_NetIncome_growth'] = self.avg_ni_growth
-        stock_summary['Years_of_data'] = self.years_of_data
+        # stock_summary['Avg_Gross_margin'] = self.avg_gross_margin
+        # stock_summary['Avg_sales_growth'] = self.avg_sales_growth
+        # stock_summary['Avg_ebit_margin'] = self.avg_ebit_margin
+        # stock_summary['Avg_ebit_growth'] = self.avg_ebit_growth
+        # stock_summary['Avg_net_margin'] = self.avg_net_margin
+        # stock_summary['Avg_NetIncome_growth'] = self.avg_ni_growth
+        # stock_summary['Years_of_data'] = self.years_of_data
 
         return stock_summary
 
