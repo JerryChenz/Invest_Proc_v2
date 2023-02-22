@@ -42,9 +42,10 @@ def download_yf(symbols, attempt, failure_list):
         try:
             # introductory information
             info = pd.Series(yf_companies.tickers[symbol].info)
+            info = info.loc[info_col]
             # info['currency'] = companies.tickers[symbol].fast_info['currency']  # get it when updating price
             # info['exchange'] = companies.tickers[symbol].fast_info['exchange']  # Use market instead
-            info = info.loc[info_col]
+            info['source'] = 'yf_data'
             # Balance Sheet
             bs_df = yf_companies.tickers[symbol].quarterly_balance_sheet
             bs_df = format_data(bs_df)

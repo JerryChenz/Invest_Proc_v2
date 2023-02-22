@@ -34,7 +34,8 @@ def download_yq(symbols, attempt, failure_list):
                     'industry': stock_data.asset_profile[symbol]['industry'],
                     'market': stock_data.quote_type[symbol]['exchange'],
                     'sharesOutstanding': stock_data.key_stats[symbol]['sharesOutstanding'],
-                    'financialCurrency': stock_data.financial_data[symbol]['financialCurrency']}
+                    'financialCurrency': stock_data.financial_data[symbol]['financialCurrency'],
+                    'source': 'yq_data'}
             info_df = pd.DataFrame.from_dict(info, orient='index').T
 
             # Balance Sheet
