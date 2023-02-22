@@ -4,6 +4,10 @@ from yahooquery import Ticker
 from forex_python.converter import CurrencyRates
 import time
 
+cwd = pathlib.Path.cwd().resolve()
+screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
+json_dir = screener_folder / 'data'
+
 
 def download_yq(symbols, attempt, failure_list):
     """
@@ -101,9 +105,9 @@ def get_quote(symbol):
 
     company = Ticker(symbol)
 
-    price = company.financial_data['currentPrice']
-    price_currency = company.price['currency']
-    report_currency = company.financial_data['financialCurrency']
+    price = company.financial_data[symbol]['currentPrice']
+    price_currency = company.price[symbol]['currency']
+    report_currency = company.financial_data[symbol]['financialCurrency']
 
     return price, price_currency, report_currency
 
@@ -112,7 +116,7 @@ def update_data(data):
     """Update the price and currency info"""
 
     ticker = data.index.values.tolist()[0]
-    quote = yq.get_quote(ticker)
+    quote = get_quote(ticker)
     data['price'] = quote[0]
     data['priceCurrency'] = quote[1]
     # Forex

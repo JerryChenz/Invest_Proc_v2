@@ -14,6 +14,10 @@ attrs = [
 ]
 '''
 
+cwd = pathlib.Path.cwd().resolve()
+screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
+json_dir = screener_folder / 'data'
+
 
 def download_yf(symbols, attempt, failure_list):
     """
