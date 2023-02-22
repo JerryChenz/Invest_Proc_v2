@@ -9,50 +9,40 @@ Python API wrapper by
 https://github.com/JerBouma/FundamentalAnalysis
 """
 
-api_key = 'c99eda5db224d34162adae341298790b'
-
-ticker = "AAPL"
-
-# collect general company information
-profile = fa.profile(ticker, api_key)
-print(profile)
-
-# collect recent company quotes // techinical data // earnings date
-quotes = fa.quote(ticker, api_key)
-print(quotes)
-
-# collect the Balance Sheet statements // columns are years
-balance_sheet_annually = fa.balance_sheet_statement(
-                          ticker, api_key, period="annual")
-
-# individual balance sheet items by year
-# print(list(balance_sheet_annually['2021'].index))
-print(balance_sheet_annually['2021'])
-
-# collect the Income Statements // columns are years
-income_statement_annually = fa.income_statement(
-                            ticker, api_key, period="annual")
-
-# individual income statement items by year
-print(list(income_statement_annually['2021'].index))
-print('- - -')
-print(income_statement_annually['2021'].loc['netIncomeRatio'])
-
-# collect the Cash Flow Statements // columns are years
-cash_flow_statement_annually = fa.cash_flow_statement(
-                                ticker, api_key, period="annual")
-
-# individual income statement items by year
-print(list(cash_flow_statement_annually['2021'].index))
-
 
 class FmpData(Stock):
     """Retrieves the data from FMP API"""
-
-    api_key = 'c99eda5db224d34162adae341298790b'
 
     def __init__(self, symbol):
         """
         :param symbol: string ticker of the stock
         """
         super().__init__(symbol)
+        self.load_attributes()
+
+    def load_attributes(self):
+        api_key = 'c99eda5db224d34162adae341298790b'
+        profile = fa.profile(self.symbol, api_key)
+        quote = fa.quote(self.symbol, api_key)
+
+        self.name = profile.loc['companyName']
+        self.sector = profile.loc['companyName']
+        self.price = [profile.loc['price'], profile.loc['currency']]
+        self.exchange = profile.loc['exchangeShortName']
+        self.shares = quote.loc['sharesOutstanding']
+        self.annual_bs = fa.balance_sheet_statement(self.symbol, api_key, period="annual")
+        self.quarter_bs = fa.balance_sheet_statement(self.symbol, api_key, period="quarterly")
+        self.is_df = fa.income_statement(self.symbol, api_key, period="annual")
+        self.cf_df = fa.cash_flow_statement_annually = fa.cash_flow_statement(self.symbol, api_key, period="annual")
+        self.report_currency = self.is_df.iloc[:, :1].loc['reportedCurrency']
+        try:
+            self.last_dividend = -int(self.cf_df.loc['CashDividendsPaid'][0]) / self.shares
+        except ZeroDivisionError:
+            self.last_dividend = 0
+        try:
+            self.buyback = -int(self.cf_df.loc['RepurchaseOfCapitalStock'][0]) / self.shares
+        except ZeroDivisionError:
+            self.buyback = 0
+        # left most column contains the most recent data
+        self.last_fy = self.annual_bs.columns[0]
+        self.most_recent_quarter = self.quarter_bs.columns[0]
