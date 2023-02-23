@@ -1,0 +1,1 @@
+It's placed here to make sure the batch folder exists
