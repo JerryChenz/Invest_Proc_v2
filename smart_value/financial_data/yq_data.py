@@ -104,14 +104,28 @@ def get_quote(symbol):
     :return: quote given option
     """
 
-    company = Ticker(symbol)
+    price = None
+    price_currency = None
+    report_currency = None
 
-    price = company.financial_data[symbol]['currentPrice']
-    price_currency = company.price[symbol]['currency']
-    report_currency = company.financial_data[symbol]['financialCurrency']
+    tries = 2
+    for i in range(tries):
+        try:
+            company = Ticker(symbol)
 
-    return price, price_currency, report_currency
-
+            price = company.financial_data[symbol]['currentPrice']
+            price_currency = company.price[symbol]['currency']
+            report_currency = company.financial_data[symbol]['financialCurrency']
+        except:  # random API error
+            if i < tries - 1:  # i is zero indexed
+                wait = 60
+                print(f"Possible API error, wait {wait} seconds before retry...")
+                time.sleep(wait)
+                continue
+            else:
+                return price, price_currency, report_currency
+        else:
+            return price, price_currency, report_currency
 
 def update_data(data):
     """Update the price and currency info"""

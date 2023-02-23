@@ -1,6 +1,4 @@
-import glob
 import os
-import pathlib
 
 
 def remove_files(path_pattern):

@@ -77,29 +77,30 @@ def output_data(source):
     batch_counter = 1
     this_batch = []
     dfs = []  # an empty list to store the batches
+    wait = 20
 
     # Step 1: merge the files in batches
     for file_path in files_path:
-        i += 1
-        j += 1
-        print(f"processing the {os.path.basename(file_path)},{i}/{files_count} files...")
-        try:
-            if j < 5 or i == files_count:
-                this_batch.append(prepare_data(file_path, source))
-            else:
-                raise TypeError
-        except TypeError:
-            if j != 1 and i != files_count:
-                batch_df = pd.concat(this_batch, ignore_index=False)
-                # concatenate all the dataframes in the this_batch.
-                batch_df.to_json(batch_dir / f"{batch_counter}_batch_data.json")
-                batch_counter += 1
+        if j < 2000:
+            i += 1
+            j += 1
+            print(f"processing the {os.path.basename(file_path)},{i}/{files_count} files...")
+            this_batch.append(prepare_data(file_path, source))
+        else:
+            if j != 0:
+                batch_counter = export_batch(this_batch, batch_counter)
                 j = 0  # restart batch counter
                 this_batch = []  # restart the batch list
-                wait = 60
-                time.sleep(wait)
-                print(f"Batch {batch_counter} starting in {wait} seconds")
-            continue
+            print(f"Batch {batch_counter} starting..., wait {wait} seconds")
+            time.sleep(wait)
+            # Re-try only once
+            i += 1
+            j += 1
+            print(f"processing the {os.path.basename(file_path)},{i}/{files_count} files...")
+            this_batch.append(prepare_data(file_path, source))
+    # export the last batch if this_batch is not empty
+    if this_batch:
+        export_batch(this_batch, batch_counter)
 
     # Step 2: merge the batch files
     batch_pattern = os.path.join(batch_dir, '*.json')
@@ -107,7 +108,7 @@ def output_data(source):
     for batch_path in batch_paths:
         batch_data = pd.read_json(batch_path)
         dfs.append(batch_data)  # append the data frame to the list
-    print("Merging and cleaning data. Please wait...")
+    print("Merging, cleaning, and exporting data. Please wait...")
     merged_df = pd.concat(dfs, ignore_index=False)
 
     # Step 3: clean the data
@@ -146,6 +147,17 @@ def prepare_data(path, source):
         data = data
     # print(data)
     return data
+
+
+def export_batch(this_batch, batch_counter):
+    """Export the batch into json"""
+
+    batch_df = pd.concat(this_batch, ignore_index=False)
+    # concatenate all the dataframes in the this_batch.
+    batch_df.to_json(batch_dir / f"{batch_counter}_batch_data.json")
+
+    return batch_counter + 1
+
 
 def export_data(df):
     """Export the df in csv format after the column names are standardized"""

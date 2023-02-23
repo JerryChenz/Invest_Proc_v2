@@ -1,4 +1,5 @@
-import smart_value
+from smart_value.tools.stock_monitor import *
 
 if __name__ == '__main__':
-    smart_value.tools.opportunities_monitor.get_opportunties_paths()
+    monitor = MonitorStock()
+    monitor.update_monitor()

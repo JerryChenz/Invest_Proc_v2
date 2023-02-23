@@ -139,8 +139,23 @@ def get_quote(symbol, option):
     :return: quote given option
     """
 
-    company = Ticker(symbol).fast_info
-    return company[option]
+    result = None
+
+    tries = 2
+    for i in range(tries):
+        try:
+            company = Ticker(symbol).fast_info
+            result = company[option]
+        except:  # random API error
+            if i < tries - 1:  # i is zero indexed
+                wait = 60
+                print(f"Possible API error, wait {wait} seconds before retry...")
+                time.sleep(wait)
+                continue
+            else:
+                return result
+        else:
+            return result
 
 
 def get_info(symbol, option):
