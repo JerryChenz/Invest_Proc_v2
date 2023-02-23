@@ -4,6 +4,7 @@ import pathlib
 import pandas as pd
 import time
 import random
+from smart_value.tools.helpers import remove_files
 from smart_value.financial_data import yf_data as yf
 from smart_value.financial_data import yq_data as yq
 
@@ -18,6 +19,7 @@ Two ways to create a screener:
 cwd = pathlib.Path.cwd().resolve()
 screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
 json_dir = screener_folder / 'data'
+batch_dir = json_dir / 'batch'
 
 
 def get_data(symbols, source):
@@ -65,29 +67,50 @@ def output_data(source):
     """Merge multiple JSON files into a pandas DataFrame, then export to csv"""
 
     json_pattern = os.path.join(json_dir, '*.json')
-    files = glob.glob(json_pattern)  # gets back a list of file objects
-    files_count = len(files)
-    i = 0  # Counter for progress
+    files_path = glob.glob(json_pattern)  # gets back a list of file objects
+    files_count = len(files_path)
+    i = 0  # Counter for overall progress
+    j = 0  # Counter for tracking batch progress
 
-    dfs = []  # an empty list to store the data frames
-    # Step 1: merge the files
-    for file in files:
+    # remove the old batch files before starting new
+    remove_files(glob.glob(os.path.join(batch_dir, '*.json')))
+    batch_counter = 1
+    this_batch = []
+    dfs = []  # an empty list to store the batches
+
+    # Step 1: merge the files in batches
+    for file_path in files_path:
         i += 1
-        print(f"processing the {i}/{files_count} file...")
-        data = pd.read_json(file)  # read data frame from json file
-        if source == "yf":
-            # print(data)
-            data = yf.update_data(data)
-        elif source == "yq":
-            data = yq.update_data(data)
-        else:
-            data = data
-        # print(data)
-        dfs.append(data)  # append the data frame to the list
-    print("Merging and cleaning data. Please wait...")
-    merged_df = pd.concat(dfs, ignore_index=False)  # concatenate all the dataframes in the list.
+        j += 1
+        print(f"processing the {os.path.basename(file_path)},{i}/{files_count} files...")
+        try:
+            if j < 5 or i == files_count:
+                this_batch.append(prepare_data(file_path, source))
+            else:
+                raise TypeError
+        except TypeError:
+            if j != 1 and i != files_count:
+                batch_df = pd.concat(this_batch, ignore_index=False)
+                # concatenate all the dataframes in the this_batch.
+                batch_df.to_json(batch_dir / f"{batch_counter}_batch_data.json")
+                batch_counter += 1
+                j = 0  # restart batch counter
+                this_batch = []  # restart the batch list
+                wait = 60
+                time.sleep(wait)
+                print(f"Batch {batch_counter} starting in {wait} seconds")
+            continue
 
-    # Step 2: clean the data
+    # Step 2: merge the batch files
+    batch_pattern = os.path.join(batch_dir, '*.json')
+    batch_paths = glob.glob(batch_pattern)  # gets back a list of file objects
+    for batch_path in batch_paths:
+        batch_data = pd.read_json(batch_path)
+        dfs.append(batch_data)  # append the data frame to the list
+    print("Merging and cleaning data. Please wait...")
+    merged_df = pd.concat(dfs, ignore_index=False)
+
+    # Step 3: clean the data
     if 'source' in merged_df.columns:
         try:
             if merged_df['source'] == "yf_data":
@@ -101,9 +124,28 @@ def output_data(source):
     else:
         merged_df = yf.clean_data(merged_df)
 
-    # Step 3: export the data
+    # Step 4: export the data
     export_data(merged_df)
 
+
+def prepare_data(path, source):
+    """prepare the data from json before cleaning
+
+    :param source: string data source selector
+    :param path: path of the json file
+    """
+
+    # prepare the data in batches to prevent abusing the API or crash
+    data = pd.read_json(path)  # read data frame from json file
+    if source == "yf":
+        # print(data)
+        data = yf.update_data(data)
+    elif source == "yq":
+        data = yq.update_data(data)
+    else:
+        data = data
+    # print(data)
+    return data
 
 def export_data(df):
     """Export the df in csv format after the column names are standardized"""
@@ -132,4 +174,3 @@ def export_data(df):
 
     df.columns = standardized_names
     df.to_csv(screener_folder / 'screener_summary.csv')
-
