@@ -19,7 +19,6 @@ Two ways to create a screener:
 cwd = pathlib.Path.cwd().resolve()
 screener_folder = cwd / 'financial_models' / 'Opportunities' / 'Screener'
 json_dir = screener_folder / 'data'
-batch_dir = json_dir / 'batch'
 
 
 def get_data(symbols, source):
@@ -69,9 +68,13 @@ def output_data():
     json_pattern = os.path.join(json_dir, '*.json')
     files_path = glob.glob(json_pattern)  # gets back a list of file objects
     dfs = []
+    files_count = len(files_path)
+    i = 0  # Counter for progress
 
     # Step 2: merge the data files
     for file_path in files_path:
+        i += 1
+        print(f"processing the {os.path.basename(file_path)},{i}/{files_count} files...")
         file_data = pd.read_json(file_path)
         dfs.append(file_data)  # append the data frame to the list
     print("Merging, cleaning, and exporting data. Please wait...")
@@ -94,7 +97,7 @@ def output_data():
     # Step 4: export the data
     export_data(merged_df)
 
-
+# Decommissioned code because the yahoo finance price updates are not efficient enough
 # def prepare_data(path, source):
 #     """prepare the data from json before cleaning
 #
@@ -115,21 +118,11 @@ def output_data():
 #     return data
 
 
-def export_batch(this_batch, batch_counter):
-    """Export the batch into json"""
-
-    batch_df = pd.concat(this_batch, ignore_index=False)
-    # concatenate all the dataframes in the this_batch.
-    batch_df.to_json(batch_dir / f"{batch_counter}_batch_data.json")
-
-    return batch_counter + 1
-
-
 def export_data(df):
     """Export the df in csv format after the column names are standardized"""
 
-    standardized_names = ['shortName', 'sector', 'industry', 'market', 'price', 'priceCurrency', 'sharesOutstanding',
-                          'reportCurrency', 'fxRate', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend',
+    standardized_names = ['shortName', 'sector', 'industry', 'market', 'priceCurrency', 'sharesOutstanding',
+                          'reportCurrency', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend',
                           'lastBuyback',
                           'totalAssets', 'currentAssets', 'currentLiabilities',
                           'totalAssets_-1', 'currentAssets_-1', 'currentLiabilities_-1',

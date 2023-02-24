@@ -34,6 +34,7 @@ def download_yq(symbols, attempt, failure_list):
                     'industry': stock_data.asset_profile[symbol]['industry'],
                     'market': stock_data.quote_type[symbol]['exchange'],
                     'sharesOutstanding': stock_data.key_stats[symbol]['sharesOutstanding'],
+                    'priceCurrency': stock_data.price[symbol]['currency'],
                     'financialCurrency': stock_data.financial_data[symbol]['financialCurrency'],
                     'source': 'yq_data'}
             info_df = pd.DataFrame.from_dict(info, orient='index').T
@@ -156,6 +157,7 @@ def clean_data(df):
     df['NoncommonInterest'] = df['TotalEquityGrossMinorityInterest'] - df['CommonStockEquity']
     df['NoncommonInterest_-1'] = df['TotalEquityGrossMinorityInterest_-1'] - df['CommonStockEquity_-1']
 
+#
     df = df.fillna(0)
     df = df[
         ['shortName', 'sector', 'industry', 'market', 'priceCurrency', 'sharesOutstanding',

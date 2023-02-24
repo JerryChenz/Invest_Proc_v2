@@ -43,7 +43,7 @@ def download_yf(symbols, attempt, failure_list):
             # introductory information
             info = pd.Series(yf_companies.tickers[symbol].info)
             info = info.loc[info_col]
-            # info['currency'] = companies.tickers[symbol].fast_info['currency']  # get it when updating price
+            info['priceCurrency'] = yf_companies.tickers[symbol].fast_info['currency']
             # info['exchange'] = companies.tickers[symbol].fast_info['exchange']  # Use market instead
             info['source'] = 'yf_data'
             # Balance Sheet
@@ -224,7 +224,7 @@ def clean_data(df):
     df = df.fillna(0)
     df = df[
         ['shortName', 'sector', 'industry', 'market', 'priceCurrency', 'sharesOutstanding',
-         'financialCurrency', 'fxRate', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend', 'lastBuyback',
+         'financialCurrency', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend', 'lastBuyback',
          'Total Assets', 'Current Assets', 'Current Liabilities',
          'Total Assets_-1', 'Current Assets_-1', 'Current Liabilities_-1',
          'Cash And Cash Equivalents', 'Other Short Term Investments',
