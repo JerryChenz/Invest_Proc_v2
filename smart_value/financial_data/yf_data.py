@@ -223,7 +223,7 @@ def clean_data(df):
 
     df = df.fillna(0)
     df = df[
-        ['shortName', 'sector', 'industry', 'market', 'price', 'priceCurrency', 'sharesOutstanding',
+        ['shortName', 'sector', 'industry', 'market', 'priceCurrency', 'sharesOutstanding',
          'financialCurrency', 'fxRate', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend', 'lastBuyback',
          'Total Assets', 'Current Assets', 'Current Liabilities',
          'Total Assets_-1', 'Current Assets_-1', 'Current Liabilities_-1',

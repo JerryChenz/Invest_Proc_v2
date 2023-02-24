@@ -127,6 +127,7 @@ def get_quote(symbol):
         else:
             return price, price_currency, report_currency
 
+
 def update_data(data):
     """Update the price and currency info"""
 
@@ -157,8 +158,8 @@ def clean_data(df):
 
     df = df.fillna(0)
     df = df[
-        ['shortName', 'sector', 'industry', 'market', 'price', 'priceCurrency', 'sharesOutstanding',
-         'financialCurrency', 'fxRate', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend', 'lastBuyback',
+        ['shortName', 'sector', 'industry', 'market', 'priceCurrency', 'sharesOutstanding',
+         'financialCurrency', 'lastFiscalYearEnd', 'mostRecentQuarter', 'lastDividend', 'lastBuyback',
          'TotalAssets', 'CurrentAssets', 'CurrentLiabilities',
          'TotalAssets_-1', 'CurrentAssets_-1', 'CurrentLiabilities_-1',
          'CashAndCashEquivalents', 'OtherShortTermInvestments',

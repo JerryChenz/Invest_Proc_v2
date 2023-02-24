@@ -13,4 +13,4 @@ data_list = '1475.HK'
 
 if __name__ == '__main__':
     # screener.get_data(data_list, "yq")
-    screener.output_data("yq")
+    screener.output_data()
