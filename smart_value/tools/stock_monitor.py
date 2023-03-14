@@ -48,24 +48,23 @@ def update_opportunities(pipline_book, op_list):
     monitor_sheet.range('B5:N200').clear_contents()
 
     r = 5
-    for op in op_list:
-        monitor_sheet.range((r, 2)).value = op.symbol
-        monitor_sheet.range((r, 3)).value = op.name
-        monitor_sheet.range((r, 4)).value = op.price
-        monitor_sheet.range((r, 5)).value = op.price_currency
-        monitor_sheet.range((r, 6)).value = op.excess_return
-        monitor_sheet.range((r, 7)).value = op.frd_dividend
-        monitor_sheet.range((r, 8)).value = op.val_floor
-        monitor_sheet.range((r, 9)).value = op.val_ceil
-        monitor_sheet.range((r, 10)).value = op.fcf_value
-        monitor_sheet.range((r, 11)).value = op.breakeven_price
-        monitor_sheet.range((r, 12)).value = op.ideal_price
-        monitor_sheet.range((r, 13)).value = op.next_action_price
-        monitor_sheet.range((r, 14)).value = op.next_action_shares
-        monitor_sheet.range((r, 15)).value = op.lfy_date
-        monitor_sheet.range((r, 16)).value = op.next_review
-        monitor_sheet.range((r, 17)).value = op.sector
-        monitor_sheet.range((r, 18)).value = op.exchange
+    for op_df in op_list:
+        monitor_sheet.range((r, 2)).value = op_df.loc['symbol']
+        monitor_sheet.range((r, 3)).value = op_df.loc['name']
+        monitor_sheet.range((r, 4)).value = op_df.loc['price']
+        monitor_sheet.range((r, 5)).value = op_df.loc['price_currency']
+        monitor_sheet.range((r, 6)).value = op_df.loc['current_excess_return']
+        monitor_sheet.range((r, 7)).value = op_df.loc['frd_dividend']
+        monitor_sheet.range((r, 8)).value = op_df.loc['val_floor']
+        monitor_sheet.range((r, 9)).value = op_df.loc['val_ceil']
+        monitor_sheet.range((r, 10)).value = op_df.loc['fcf_value']
+        monitor_sheet.range((r, 11)).value = op_df.loc['breakeven_price']
+        monitor_sheet.range((r, 12)).value = op_df.loc['ideal_price']
+        monitor_sheet.range((r, 13)).value = op_df.loc['next_action_price']
+        monitor_sheet.range((r, 14)).value = op_df.loc['next_action_shares']
+        monitor_sheet.range((r, 15)).value = op_df.loc['lfy_date']
+        monitor_sheet.range((r, 16)).value = op_df.loc['next_review']
+        monitor_sheet.range((r, 17)).value = op_df.loc['exchange']
         r += 1
 
 
@@ -101,7 +100,7 @@ class MonitorStock:
     """Monitor class"""
 
     opportunities = []
-    monitor_df = None
+    # monitor_df = None
 
     def __init__(self):
         self.symbol = None
@@ -109,9 +108,7 @@ class MonitorStock:
         self.exchange = None
         self.price = None
         self.price_currency = None
-        self.price_range = None
         self.current_excess_return = None
-        self.nonop_assets = None
         self.val_floor = None
         self.val_ceil = None
         self.fcf_value = None
@@ -134,7 +131,7 @@ class MonitorStock:
             self.read_opportunity(opportunities_path)
             opportunity_df = pd.DataFrame.from_dict(self.__dict__, orient='index')
             self.opportunities.append(opportunity_df)
-            self.monitor_df = pd.concat(self.opportunities)
+            # self.monitor_df = pd.concat(self.opportunities)
 
     def read_opportunity(self, opportunities_path):
         """Read all the opportunities at the opportunities_path.
@@ -160,13 +157,12 @@ class MonitorStock:
             xl_book.close()
 
     def load_attributes(self, dash_sheet):
-        self.symbol = smart_value.stock.Stock(dash_sheet.range('C3').value)
+        self.symbol = dash_sheet.range('C3').value
         self.name = dash_sheet.range('C4').value
         self.exchange = dash_sheet.range('I3').value
         self.price = dash_sheet.range('I4').value
         self.price_currency = dash_sheet.range('J4').value
         self.current_excess_return = dash_sheet.range('D16').value
-        self.nonop_assets = dash_sheet.range('F21').value
         self.val_floor = dash_sheet.range('D14').value
         self.val_ceil = dash_sheet.range('F14').value
         self.fcf_value = dash_sheet.range('H14').value
