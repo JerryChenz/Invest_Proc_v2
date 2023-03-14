@@ -60,11 +60,12 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 10)).value = op_df.loc['fcf_value']
         monitor_sheet.range((r, 11)).value = op_df.loc['breakeven_price']
         monitor_sheet.range((r, 12)).value = op_df.loc['ideal_price']
-        monitor_sheet.range((r, 13)).value = op_df.loc['next_action_price']
-        monitor_sheet.range((r, 14)).value = op_df.loc['next_action_shares']
-        monitor_sheet.range((r, 15)).value = op_df.loc['lfy_date']
-        monitor_sheet.range((r, 16)).value = op_df.loc['next_review']
-        monitor_sheet.range((r, 17)).value = op_df.loc['exchange']
+        monitor_sheet.range((r, 13)).value = op_df.loc['next_buy_price']
+        monitor_sheet.range((r, 14)).value = op_df.loc['next_buy_shares']
+        monitor_sheet.range((r, 15)).value = op_df.loc['next_sell_pricel']
+        monitor_sheet.range((r, 16)).value = op_df.loc['fy_date']
+        monitor_sheet.range((r, 17)).value = op_df.loc['next_review']
+        monitor_sheet.range((r, 18)).value = op_df.loc['exchange']
         r += 1
 
 
@@ -113,8 +114,9 @@ class MonitorStock:
         self.val_ceil = None
         self.fcf_value = None
         self.breakeven_price = None
-        self.next_action_price = None
-        self.next_action_shares = None
+        self.next_buy_price = None
+        self.next_buy_shares = None
+        self.next_sell_price = None
         self.ideal_price = None
         self.frd_dividend = None
         self.next_review = None
@@ -167,8 +169,9 @@ class MonitorStock:
         self.val_ceil = dash_sheet.range('F14').value
         self.fcf_value = dash_sheet.range('H14').value
         self.breakeven_price = dash_sheet.range('B17').value
-        self.next_action_price = dash_sheet.range('C35').value
-        self.next_action_shares = dash_sheet.range('C36').value
+        self.next_buy_price = dash_sheet.range('C35').value
+        self.next_buy_shares = dash_sheet.range('C36').value
+        self.next_sell_price = dash_sheet.range('I35').value
         self.ideal_price = dash_sheet.range('J25').value
         self.lfy_date = dash_sheet.range('E6').value
         self.next_review = dash_sheet.range('D6').value
