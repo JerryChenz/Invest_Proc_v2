@@ -59,13 +59,16 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 8)).value = op.excess_return
         monitor_sheet.range((r, 9)).value = f'=F{r}-J{r}'
         monitor_sheet.range((r, 10)).value = op.nonop_assets
-        monitor_sheet.range((r, 11)).value = op.fcf_value
+        monitor_sheet.range((r, 11)).value = op.breakeven_price
         monitor_sheet.range((r, 12)).value = op.ideal_price
-        monitor_sheet.range((r, 13)).value = op.realizable_value
-        monitor_sheet.range((r, 14)).value = op.navps
+        monitor_sheet.range((r, 13)).value = op.fcf_value
+        monitor_sheet.range((r, 14)).value = 1
         monitor_sheet.range((r, 15)).value = op.last_dividend
         monitor_sheet.range((r, 16)).value = op.last_result
         monitor_sheet.range((r, 17)).value = op.lfy_date
+        monitor_sheet.range((r, 18)).value = op.lfy_date
+        monitor_sheet.range((r, 19)).value = op.lfy_date
+        monitor_sheet.range((r, 20)).value = op.lfy_date
         r += 1
 
 
@@ -111,11 +114,14 @@ class MonitorStock:
         self.price_currency = None
         self.price_range = None
         self.current_excess_return = None
+        self.nonop_assets = None
+        self.val_floor = None
+        self.val_ceil = None
         self.fcf_value = None
         self.breakeven_price = None
+        self.next_action_price = None
+        self.next_action_shares = None
         self.ideal_price = None
-        self.realizable_value = None
-        self.nonop_assets = None
         self.frd_dividend = None
         self.next_review = None
         self.lfy_date = None  # date of the last financial year-end
@@ -148,7 +154,7 @@ class MonitorStock:
 
             if r_stock.match(str(opportunities_path)):
                 # Update the models first in the opportunities folder
-                company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yf_quote")
+                company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
                 smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
                 xl_book.save(opportunities_path)  # xls must be saved to update the values
                 self.load_attributes(dash_sheet)
@@ -163,13 +169,16 @@ class MonitorStock:
         self.price = dash_sheet.range('I4').value
         self.price_currency = dash_sheet.range('J4').value
         self.current_excess_return = dash_sheet.range('D16').value
+        self.nonop_assets = dash_sheet.range('F21').value
+        self.val_floor = dash_sheet.range('D14').value
+        self.val_ceil = dash_sheet.range('F14').value
         self.fcf_value = dash_sheet.range('H14').value
         self.breakeven_price = dash_sheet.range('B17').value
-        self.ideal_price = dash_sheet.range('B18').value
-        self.realizable_value = dash_sheet.range('D14').value
-        self.nonop_assets = dash_sheet.range('F21').value
+        self.next_action_price = dash_sheet.range('C35').value
+        self.next_action_shares = dash_sheet.range('C36').value
+        self.ideal_price = dash_sheet.range('J25').value
         self.lfy_date = dash_sheet.range('E6').value
-        self.next_review = dash_sheet.range('C7').value
+        self.next_review = dash_sheet.range('D6').value
         self.frd_dividend = dash_sheet.range('E16').value
 
     def update_monitor(self):
