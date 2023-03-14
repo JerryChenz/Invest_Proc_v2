@@ -2,7 +2,6 @@ from datetime import datetime
 import xlwings
 import pathlib
 import re
-from smart_value.stock import *
 import smart_value.tools.stock_model
 import smart_value.financial_data.fred_data
 import pandas as pd
@@ -52,23 +51,21 @@ def update_opportunities(pipline_book, op_list):
     for op in op_list:
         monitor_sheet.range((r, 2)).value = op.symbol
         monitor_sheet.range((r, 3)).value = op.name
-        monitor_sheet.range((r, 4)).value = op.sector
-        monitor_sheet.range((r, 5)).value = op.exchange
-        monitor_sheet.range((r, 6)).value = op.price
-        monitor_sheet.range((r, 7)).value = op.price_currency
-        monitor_sheet.range((r, 8)).value = op.excess_return
-        monitor_sheet.range((r, 9)).value = f'=F{r}-J{r}'
-        monitor_sheet.range((r, 10)).value = op.nonop_assets
+        monitor_sheet.range((r, 4)).value = op.price
+        monitor_sheet.range((r, 5)).value = op.price_currency
+        monitor_sheet.range((r, 6)).value = op.excess_return
+        monitor_sheet.range((r, 7)).value = op.frd_dividend
+        monitor_sheet.range((r, 8)).value = op.val_floor
+        monitor_sheet.range((r, 9)).value = op.val_ceil
+        monitor_sheet.range((r, 10)).value = op.fcf_value
         monitor_sheet.range((r, 11)).value = op.breakeven_price
         monitor_sheet.range((r, 12)).value = op.ideal_price
-        monitor_sheet.range((r, 13)).value = op.fcf_value
-        monitor_sheet.range((r, 14)).value = 1
-        monitor_sheet.range((r, 15)).value = op.last_dividend
-        monitor_sheet.range((r, 16)).value = op.last_result
-        monitor_sheet.range((r, 17)).value = op.lfy_date
-        monitor_sheet.range((r, 18)).value = op.lfy_date
-        monitor_sheet.range((r, 19)).value = op.lfy_date
-        monitor_sheet.range((r, 20)).value = op.lfy_date
+        monitor_sheet.range((r, 13)).value = op.next_action_price
+        monitor_sheet.range((r, 14)).value = op.next_action_shares
+        monitor_sheet.range((r, 15)).value = op.lfy_date
+        monitor_sheet.range((r, 16)).value = op.next_review
+        monitor_sheet.range((r, 17)).value = op.sector
+        monitor_sheet.range((r, 18)).value = op.exchange
         r += 1
 
 
@@ -179,7 +176,7 @@ class MonitorStock:
         self.ideal_price = dash_sheet.range('J25').value
         self.lfy_date = dash_sheet.range('E6').value
         self.next_review = dash_sheet.range('D6').value
-        self.frd_dividend = dash_sheet.range('E16').value
+        self.frd_dividend = dash_sheet.range('F16').value
 
     def update_monitor(self):
         """Update the Monitor file"""
