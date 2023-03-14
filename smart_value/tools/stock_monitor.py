@@ -96,7 +96,6 @@ def update_opportunities(pipline_book, op_list):
     monitor_sheet.range('B5:N200').clear_contents()
 
     r = 5
-    print(f"Total {len(op_list)} opportunities")
     for op in op_list:
         monitor_sheet.range((r, 2)).value = op.symbol
         monitor_sheet.range((r, 3)).value = op.name
@@ -116,7 +115,7 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 17)).value = op.next_review
         monitor_sheet.range((r, 18)).value = op.exchange
         r += 1
-
+    print(f"Total {len(op_list)} opportunities Updated")
 
 def update_holdings(pipline_book, op_list):
     """Update the Current_Holdings sheet in the Pipeline_monitor file.
