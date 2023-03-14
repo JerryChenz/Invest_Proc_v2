@@ -192,7 +192,7 @@ def update_dash(ticker, source):
 
 
 class StockModel(Stock):
-    """a type of Securities"""
+    """Stock model class"""
 
     def __init__(self, symbol, source):
         """

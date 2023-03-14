@@ -2,7 +2,7 @@ from datetime import datetime
 import xlwings
 import pathlib
 import re
-import smart_value.stock
+from smart_value.stock import *
 import smart_value.tools.stock_model
 import smart_value.financial_data.fred_data
 import pandas as pd
@@ -56,15 +56,16 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 5)).value = op.exchange
         monitor_sheet.range((r, 6)).value = op.price
         monitor_sheet.range((r, 7)).value = op.price_currency
-        monitor_sheet.range((r, 8)).value = f'=F{r}-I{r}'
-        monitor_sheet.range((r, 9)).value = op.nonop_assets
-        monitor_sheet.range((r, 10)).value = op.excess_return
-        monitor_sheet.range((r, 11)).value = op.ideal_price
-        monitor_sheet.range((r, 12)).value = op.fcf_value
+        monitor_sheet.range((r, 8)).value = op.excess_return
+        monitor_sheet.range((r, 9)).value = f'=F{r}-J{r}'
+        monitor_sheet.range((r, 10)).value = op.nonop_assets
+        monitor_sheet.range((r, 11)).value = op.fcf_value
+        monitor_sheet.range((r, 12)).value = op.ideal_price
         monitor_sheet.range((r, 13)).value = op.realizable_value
         monitor_sheet.range((r, 14)).value = op.navps
         monitor_sheet.range((r, 15)).value = op.last_dividend
         monitor_sheet.range((r, 16)).value = op.last_result
+        monitor_sheet.range((r, 17)).value = op.lfy_date
         r += 1
 
 
@@ -109,15 +110,15 @@ class MonitorStock:
         self.price = None
         self.price_currency = None
         self.price_range = None
-        self.excess_return = None
+        self.current_excess_return = None
         self.fcf_value = None
-        self.target_price_1 = None
-        self.target_price_2 = None
+        self.breakeven_price = None
+        self.ideal_price = None
         self.realizable_value = None
         self.nonop_assets = None
         self.frd_dividend = None
-        self.last_result = None
         self.next_review = None
+        self.lfy_date = None  # date of the last financial year-end
         self.load_data()
 
     def load_data(self):
@@ -161,16 +162,15 @@ class MonitorStock:
         self.exchange = dash_sheet.range('I3').value
         self.price = dash_sheet.range('I4').value
         self.price_currency = dash_sheet.range('J4').value
-        self.price_range = dash_sheet.range('G14').value
-        self.excess_return = dash_sheet.range('I16').value
-        self.fcf_value = dash_sheet.range('B17').value
-        self.target_price_1 = dash_sheet.range('B18').value
-        self.target_price_2 = dash_sheet.range('B18').value
+        self.current_excess_return = dash_sheet.range('D16').value
+        self.fcf_value = dash_sheet.range('H14').value
+        self.breakeven_price = dash_sheet.range('B17').value
+        self.ideal_price = dash_sheet.range('B18').value
         self.realizable_value = dash_sheet.range('D14').value
         self.nonop_assets = dash_sheet.range('F21').value
-        self.frd_dividend = dash_sheet.range('C7').value
-        self.last_result = dash_sheet.range('C6').value
-        self.next_review = None
+        self.lfy_date = dash_sheet.range('E6').value
+        self.next_review = dash_sheet.range('C7').value
+        self.frd_dividend = dash_sheet.range('E16').value
 
     def update_monitor(self):
         """Update the Monitor file"""
