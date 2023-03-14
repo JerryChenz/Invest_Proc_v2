@@ -4,10 +4,58 @@ import pathlib
 import re
 import smart_value.tools.stock_model
 import smart_value.financial_data.fred_data
-import pandas as pd
 
 models_folder_path = pathlib.Path.cwd().resolve() / 'financial_models' / 'Opportunities'
 monitor_file_path = models_folder_path / 'Monitor' / 'Monitor.xlsx'
+
+
+def update_monitor():
+    """Update the Monitor file"""
+
+    opportunities = []
+    # initialize the instances
+
+    # load and update the new valuation xlsx
+    for opportunities_path in get_model_paths():
+        # load and update the new valuation xlsx
+        print(f"Working with {opportunities_path}...")
+        op = read_opportunity(opportunities_path)
+        opportunities.append(op)
+        # self.monitor_df = pd.concat(self.opportunities)
+
+    print("Updating Monitor...")
+    with xlwings.App(visible=False) as app:
+        pipline_book = app.books.open(monitor_file_path)
+        update_opportunities(pipline_book, opportunities)
+        # update_holdings(pipline_book, self.opportunities)
+        pipline_book.save(monitor_file_path)
+        pipline_book.close()
+
+
+def read_opportunity(opportunities_path):
+    """Read all the opportunities at the opportunities_path.
+
+    :param opportunities_path: path of the model in the opportunities' folder
+    :return: an Asset object
+    """
+
+    r_stock = re.compile(".*_Stock_Valuation")
+    # get the formula results using xlwings because openpyxl doesn't evaluate formula
+    with xlwings.App(visible=False) as app:
+        xl_book = app.books.open(opportunities_path)
+        dash_sheet = xl_book.sheets('Dashboard')
+
+        if r_stock.match(str(opportunities_path)):
+            # Update the models first in the opportunities folder
+            company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
+            smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
+            xl_book.save(opportunities_path)  # xls must be saved to update the values
+            op = MonitorStock(dash_sheet)  # the MonitorStock object representing a opportunity
+        else:
+            print(f"'{opportunities_path}' is incorrect")
+        xl_book.close()
+
+    return op
 
 
 def get_model_paths():
@@ -48,24 +96,25 @@ def update_opportunities(pipline_book, op_list):
     monitor_sheet.range('B5:N200').clear_contents()
 
     r = 5
-    for op_df in op_list:
-        monitor_sheet.range((r, 2)).value = op_df.loc['symbol']
-        monitor_sheet.range((r, 3)).value = op_df.loc['name']
-        monitor_sheet.range((r, 4)).value = op_df.loc['price']
-        monitor_sheet.range((r, 5)).value = op_df.loc['price_currency']
-        monitor_sheet.range((r, 6)).value = op_df.loc['current_excess_return']
-        monitor_sheet.range((r, 7)).value = op_df.loc['frd_dividend']
-        monitor_sheet.range((r, 8)).value = op_df.loc['val_floor']
-        monitor_sheet.range((r, 9)).value = op_df.loc['val_ceil']
-        monitor_sheet.range((r, 10)).value = op_df.loc['fcf_value']
-        monitor_sheet.range((r, 11)).value = op_df.loc['breakeven_price']
-        monitor_sheet.range((r, 12)).value = op_df.loc['ideal_price']
-        monitor_sheet.range((r, 13)).value = op_df.loc['next_buy_price']
-        monitor_sheet.range((r, 14)).value = op_df.loc['next_buy_shares']
-        monitor_sheet.range((r, 15)).value = op_df.loc['next_sell_pricel']
-        monitor_sheet.range((r, 16)).value = op_df.loc['fy_date']
-        monitor_sheet.range((r, 17)).value = op_df.loc['next_review']
-        monitor_sheet.range((r, 18)).value = op_df.loc['exchange']
+    print(f"Total {len(op_list)} opportunities")
+    for op in op_list:
+        monitor_sheet.range((r, 2)).value = op.symbol
+        monitor_sheet.range((r, 3)).value = op.name
+        monitor_sheet.range((r, 4)).value = op.price
+        monitor_sheet.range((r, 5)).value = op.price_currency
+        monitor_sheet.range((r, 6)).value = op.current_excess_return
+        monitor_sheet.range((r, 7)).value = op.frd_dividend
+        monitor_sheet.range((r, 8)).value = op.val_floor
+        monitor_sheet.range((r, 9)).value = op.val_ceil
+        monitor_sheet.range((r, 10)).value = op.fcf_value
+        monitor_sheet.range((r, 11)).value = op.breakeven_price
+        monitor_sheet.range((r, 12)).value = op.ideal_price
+        monitor_sheet.range((r, 13)).value = op.next_buy_price
+        monitor_sheet.range((r, 14)).value = op.next_buy_shares
+        monitor_sheet.range((r, 15)).value = op.next_sell_price
+        monitor_sheet.range((r, 16)).value = op.lfy_date
+        monitor_sheet.range((r, 17)).value = op.next_review
+        monitor_sheet.range((r, 18)).value = op.exchange
         r += 1
 
 
@@ -100,65 +149,7 @@ def update_holdings(pipline_book, op_list):
 class MonitorStock:
     """Monitor class"""
 
-    opportunities = []
-    # monitor_df = None
-
-    def __init__(self):
-        self.symbol = None
-        self.name = None
-        self.exchange = None
-        self.price = None
-        self.price_currency = None
-        self.current_excess_return = None
-        self.val_floor = None
-        self.val_ceil = None
-        self.fcf_value = None
-        self.breakeven_price = None
-        self.next_buy_price = None
-        self.next_buy_shares = None
-        self.next_sell_price = None
-        self.ideal_price = None
-        self.frd_dividend = None
-        self.next_review = None
-        self.lfy_date = None  # date of the last financial year-end
-        self.load_data()
-
-    def load_data(self):
-        """initialize the instances"""
-
-        # load and update the new valuation xlsx
-        for opportunities_path in get_model_paths():
-            # load and update the new valuation xlsx
-            print(f"Working with {opportunities_path}...")
-            self.read_opportunity(opportunities_path)
-            opportunity_df = pd.DataFrame.from_dict(self.__dict__, orient='index')
-            self.opportunities.append(opportunity_df)
-            # self.monitor_df = pd.concat(self.opportunities)
-
-    def read_opportunity(self, opportunities_path):
-        """Read all the opportunities at the opportunities_path.
-
-        :param opportunities_path: path of the model in the opportunities' folder
-        :return: an Asset object
-        """
-
-        r_stock = re.compile(".*_Stock_Valuation")
-        # get the formula results using xlwings because openpyxl doesn't evaluate formula
-        with xlwings.App(visible=False) as app:
-            xl_book = app.books.open(opportunities_path)
-            dash_sheet = xl_book.sheets('Dashboard')
-
-            if r_stock.match(str(opportunities_path)):
-                # Update the models first in the opportunities folder
-                company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
-                smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
-                xl_book.save(opportunities_path)  # xls must be saved to update the values
-                self.load_attributes(dash_sheet)
-            else:
-                pass  # to be implemented
-            xl_book.close()
-
-    def load_attributes(self, dash_sheet):
+    def __init__(self, dash_sheet):
         self.symbol = dash_sheet.range('C3').value
         self.name = dash_sheet.range('C4').value
         self.exchange = dash_sheet.range('I3').value
@@ -173,17 +164,7 @@ class MonitorStock:
         self.next_buy_shares = dash_sheet.range('C36').value
         self.next_sell_price = dash_sheet.range('I35').value
         self.ideal_price = dash_sheet.range('J25').value
-        self.lfy_date = dash_sheet.range('E6').value
+        self.lfy_date = dash_sheet.range('E6').value  # date of the last financial year-end
         self.next_review = dash_sheet.range('D6').value
         self.frd_dividend = dash_sheet.range('F16').value
 
-    def update_monitor(self):
-        """Update the Monitor file"""
-
-        print("Updating Monitor...")
-        with xlwings.App(visible=False) as app:
-            pipline_book = app.books.open(monitor_file_path)
-            update_opportunities(pipline_book, self.opportunities)
-            # update_holdings(pipline_book, self.opportunities)
-            pipline_book.save(monitor_file_path)
-            pipline_book.close()
