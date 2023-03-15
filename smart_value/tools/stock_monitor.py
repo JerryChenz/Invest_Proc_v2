@@ -7,7 +7,8 @@ from smart_value.financial_data.fred_data import risk_free_rate
 from smart_value.financial_data.hkma_data import get_hk_riskfree
 
 models_folder_path = pathlib.Path.cwd().resolve() / 'financial_models' / 'Opportunities'
-monitor_file_path = models_folder_path / 'Monitor' / 'Monitor.xlsx'
+p_monitor_file_path = models_folder_path / 'Monitor' / 'Portfolio_Monitor.xlsx'
+m_monitor_file_path = models_folder_path / 'Monitor' / 'Macro_Monitor.xlsx'
 
 
 def update_monitor():
@@ -15,7 +16,7 @@ def update_monitor():
 
     opportunities = []
 
-    read_market(monitor_file_path, "Free")  # Update the marco Monitor
+    update_marco(m_monitor_file_path, "Free")  # Update the marco Monitor
 
     # load and update the new valuation xlsx
     for opportunities_path in get_model_paths():
@@ -25,15 +26,15 @@ def update_monitor():
 
     print("Updating Monitor...")
     with xlwings.App(visible=False) as app:
-        pipline_book = app.books.open(monitor_file_path)
+        pipline_book = app.books.open(p_monitor_file_path)
         update_opportunities(pipline_book, opportunities)
         # update_holdings(pipline_book, opportunities)
-        pipline_book.save(monitor_file_path)
+        pipline_book.save(p_monitor_file_path)
         pipline_book.close()
     print("Update completed")
 
 
-def read_market(monitor_path, source):
+def update_marco(monitor_path, source):
     """Update the Current_Holdings sheet in the Pipeline_monitor file.
 
     :param source: the API option
@@ -123,7 +124,7 @@ def update_opportunities(pipline_book, op_list):
     """
 
     monitor_sheet = pipline_book.sheets('Opportunities')
-    monitor_sheet.range('B5:N200').clear_contents()
+    monitor_sheet.range('B5:S200').clear_contents()
 
     r = 5
     for op in op_list:

@@ -10,7 +10,7 @@ from smart_value.financial_data import yq_data as yq
 from openpyxl import load_workbook
 
 models_folder_path = pathlib.Path.cwd().resolve() / 'financial_models' / 'Opportunities'
-monitor_file_path = models_folder_path / 'Monitor' / 'Monitor.xlsx'
+m_monitor_file_path = models_folder_path / 'Monitor' / 'Macro_Monitor.xlsx'
 
 
 def new_stock_model(ticker, source):
@@ -89,7 +89,7 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     """
 
     # Marco data
-    monitor_wb = load_workbook(monitor_file_path, read_only=True, data_only=True)
+    monitor_wb = load_workbook(m_monitor_file_path, read_only=True, data_only=True)
     macro_sheet = monitor_wb["Macro"]
     us_mos = macro_sheet['D3'].value
     cn_mos = macro_sheet['F3'].value
@@ -97,6 +97,7 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     us_riskfree = macro_sheet['D6'].value
     cn_riskfree = macro_sheet['F6'].value
     hk_riskfree = macro_sheet['H6'].value
+    monitor_wb.close()
 
     if dash_sheet.range('C10').value == "US":
         dash_sheet.range('D10').value = us_riskfree
