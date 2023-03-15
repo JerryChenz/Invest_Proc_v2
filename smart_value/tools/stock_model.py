@@ -91,17 +91,22 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     # Marco data
     monitor_wb = load_workbook(monitor_file_path, read_only=True)
     macro_sheet = monitor_wb["Macro"]
-    us_mos = macro_sheet['D3']
-    cn_mos = macro_sheet['F3']
-    us_riskfree = macro_sheet['D6']
-    cn_riskfree = macro_sheet['F6']
+    us_mos = macro_sheet['D3'].value
+    cn_mos = macro_sheet['F3'].value
+    hk_mos = macro_sheet['H3'].value
+    us_riskfree = macro_sheet['D6'].value
+    cn_riskfree = macro_sheet['F6'].value
+    hk_riskfree = macro_sheet['H6'].value
 
     if dash_sheet.range('C10').value == "US":
         dash_sheet.range('D10').value = us_riskfree
         dash_sheet.range('C16').value = us_mos
-    else:
+    elif dash_sheet.range('C10').value == "CN":
         dash_sheet.range('D10').value = cn_riskfree
         dash_sheet.range('C16').value = cn_mos
+    else:
+        dash_sheet.range('D10').value = hk_riskfree
+        dash_sheet.range('C16').value = hk_mos
 
     # Stock data
     if new_bool:

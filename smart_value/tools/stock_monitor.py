@@ -4,6 +4,7 @@ import pathlib
 import re
 import smart_value.tools.stock_model
 from smart_value.financial_data.fred_data import risk_free_rate
+from smart_value.financial_data.hkma_data import get_hk_riskfree
 
 models_folder_path = pathlib.Path.cwd().resolve() / 'financial_models' / 'Opportunities'
 monitor_file_path = models_folder_path / 'Monitor' / 'Monitor.xlsx'
@@ -18,7 +19,7 @@ def update_monitor():
     # load and update the new valuation xlsx
     for opportunities_path in get_model_paths():
         print(f"Working with {opportunities_path}...")
-        read_market(monitor_file_path, "Fred")
+        read_market(monitor_file_path, "Free")
         op = read_opportunity(opportunities_path)  # load and update the new valuation xlsx
         opportunities.append(op)
 
@@ -40,18 +41,19 @@ def read_market(monitor_path, source):
 
     us_riskfree = 0.08
     cn_riskfree = 0.06
+    hk_riskfree = us_riskfree
 
-    if source == "Fred":
+    if source == "Free":
         us_riskfree = risk_free_rate("us")
         cn_riskfree = risk_free_rate("cn")
+        hk_riskfree = get_hk_riskfree()
 
     with xlwings.App(visible=False) as app:
         marco_book = app.books.open(monitor_path)
         macro_sheet = marco_book.sheets('Macro')
         macro_sheet.range('D6').value = us_riskfree
         macro_sheet.range('F6').value = cn_riskfree
-        us_mos = macro_sheet.range('D3').value
-        cn_mos = macro_sheet.range('F3').value
+        macro_sheet.range('H6').value = hk_riskfree
         marco_book.save(monitor_file_path)
         marco_book.close()
 
