@@ -3,7 +3,7 @@ import xlwings
 import pathlib
 import re
 import smart_value.tools.stock_model
-from smart_value.financial_data.fred_data import risk_free_rate
+from smart_value.financial_data.fred_data import risk_free_rate, inflation
 from smart_value.financial_data.hkma_data import get_hk_riskfree
 
 models_folder_path = pathlib.Path.cwd().resolve() / 'financial_models' / 'Opportunities'
@@ -45,6 +45,7 @@ def update_marco(monitor_path, source):
     us_riskfree = 0.08
     cn_riskfree = 0.06
     hk_riskfree = us_riskfree
+    us_inflation = 0.02
 
     if source == "Free":
         us_riskfree = risk_free_rate("us")
@@ -53,6 +54,7 @@ def update_marco(monitor_path, source):
         # print(cn_riskfree)
         hk_riskfree = get_hk_riskfree()
         # print(hk_riskfree)
+        us_inflation = inflation("us")
 
     with xlwings.App(visible=False) as app:
         marco_book = app.books.open(monitor_path)
@@ -60,6 +62,7 @@ def update_marco(monitor_path, source):
         macro_sheet.range('D6').value = us_riskfree
         macro_sheet.range('F6').value = cn_riskfree
         macro_sheet.range('H6').value = hk_riskfree
+        macro_sheet.range('D7').value = us_inflation
         marco_book.save(monitor_path)
         marco_book.close()
     print("Finished Marco data Update")
