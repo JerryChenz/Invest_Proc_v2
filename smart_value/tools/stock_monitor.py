@@ -15,6 +15,8 @@ def update_monitor():
 
     opportunities = []
 
+    read_market(monitor_file_path, "Free")  # Update the marco Monitor
+
     # load and update the new valuation xlsx
     for opportunities_path in get_model_paths():
         print(f"Working with {opportunities_path}...")
@@ -22,8 +24,8 @@ def update_monitor():
         opportunities.append(op)
 
     print("Updating Monitor...")
-    with xlwings.App(visible=False) as f_app:
-        pipline_book = f_app.books.open(monitor_file_path)
+    with xlwings.App(visible=False) as app:
+        pipline_book = app.books.open(monitor_file_path)
         update_opportunities(pipline_book, opportunities)
         # update_holdings(pipline_book, opportunities)
         pipline_book.save(monitor_file_path)
@@ -57,7 +59,7 @@ def read_market(monitor_path, source):
         macro_sheet.range('D6').value = us_riskfree
         macro_sheet.range('F6').value = cn_riskfree
         macro_sheet.range('H6').value = hk_riskfree
-        marco_book.save(monitor_file_path)
+        marco_book.save(monitor_path)
         marco_book.close()
     print("Finished Marco data Update")
 
@@ -74,12 +76,11 @@ def read_opportunity(opportunities_path):
     with xlwings.App(visible=False) as app:
         xl_book = app.books.open(opportunities_path)
         dash_sheet = xl_book.sheets('Dashboard')
-
         if r_stock.match(str(opportunities_path)):
             company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
             smart_value.tools.stock_model.update_dashboard(dash_sheet, company)  # Update
             xl_book.save(opportunities_path)  # xls must be saved to update the values
-            op = MonitorStock(dash_sheet)  # the MonitorStock object representing a opportunity
+            op = MonitorStock(dash_sheet)  # the MonitorStock object representing an opportunity
         else:
             print(f"'{opportunities_path}' is incorrect")
         xl_book.close()

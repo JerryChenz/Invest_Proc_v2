@@ -89,12 +89,11 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     """
 
     # Marco data
-    monitor_wb = load_workbook(monitor_file_path, read_only=True)
+    monitor_wb = load_workbook(monitor_file_path, read_only=True, data_only=True)
     macro_sheet = monitor_wb["Macro"]
     us_mos = macro_sheet['D3'].value
     cn_mos = macro_sheet['F3'].value
     hk_mos = macro_sheet['H3'].value
-    print(hk_mos)
     us_riskfree = macro_sheet['D6'].value
     cn_riskfree = macro_sheet['F6'].value
     hk_riskfree = macro_sheet['H6'].value
