@@ -12,6 +12,6 @@ def risk_free_rate(country):
     fred = Fred(api_key=fred_api_key)
 
     if country == 'cn':
-        return fred.get_series('INTDSRCNM193N')  # China Discount Rate
+        return fred.get_series('INTDSRCNM193N').iloc[-1]  # China Discount Rate
     else:
-        return fred.get_series('DGS10')  # US 10 Year Treasury Yield
+        return fred.get_series('DGS10').iloc[-1]  # US 10 Year Treasury Yield
