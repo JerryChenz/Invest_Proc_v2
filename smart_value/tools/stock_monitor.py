@@ -3,7 +3,7 @@ import xlwings
 import pathlib
 import re
 import smart_value.tools.stock_model
-import smart_value.financial_data.fred_data
+from smart_value.financial_data.fred_data import risk_free_rate
 
 models_folder_path = pathlib.Path.cwd().resolve() / 'financial_models' / 'Opportunities'
 monitor_file_path = models_folder_path / 'Monitor' / 'Monitor.xlsx'
@@ -21,7 +21,6 @@ def update_monitor():
         print(f"Working with {opportunities_path}...")
         op = read_opportunity(opportunities_path)
         opportunities.append(op)
-        # self.monitor_df = pd.concat(self.opportunities)
 
     print("Updating Monitor...")
     with xlwings.App(visible=False) as app:
@@ -114,8 +113,10 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 16)).value = op.lfy_date
         monitor_sheet.range((r, 17)).value = op.next_review
         monitor_sheet.range((r, 18)).value = op.exchange
+        monitor_sheet.range((r, 19)).value = op.inv_category
         r += 1
     print(f"Total {len(op_list)} opportunities Updated")
+
 
 def update_holdings(pipline_book, op_list):
     """Update the Current_Holdings sheet in the Pipeline_monitor file.
@@ -145,6 +146,21 @@ def update_holdings(pipline_book, op_list):
     holding_sheet.range('I2').value = datetime.today().strftime('%Y-%m-%d')
 
 
+def update_market(pipline_book):
+    """Update the Current_Holdings sheet in the Pipeline_monitor file.
+
+    :param pipline_book: xlwings book object
+    """
+
+    us_riskfree = risk_free_rate("us")
+    cn_riskfree = risk_free_rate("cn")
+
+    market_sheet = pipline_book.sheets('Macro')
+
+    market_sheet.range('D3').value = us_riskfree
+    market_sheet.range('F3').value = cn_riskfree
+
+
 class MonitorStock:
     """Monitor class"""
 
@@ -152,6 +168,7 @@ class MonitorStock:
         self.symbol = dash_sheet.range('C3').value
         self.name = dash_sheet.range('C4').value
         self.exchange = dash_sheet.range('I3').value
+        self.inv_category = dash_sheet.range('D20').value
         self.price = dash_sheet.range('I4').value
         self.price_currency = dash_sheet.range('J4').value
         self.current_excess_return = dash_sheet.range('D16').value
@@ -166,4 +183,3 @@ class MonitorStock:
         self.lfy_date = dash_sheet.range('E6').value  # date of the last financial year-end
         self.next_review = dash_sheet.range('D6').value
         self.frd_dividend = dash_sheet.range('F16').value
-
