@@ -15,8 +15,6 @@ def update_monitor():
 
     opportunities = []
 
-    read_market(monitor_file_path, "Free")  # Update the Monitor
-
     # load and update the new valuation xlsx
     for opportunities_path in get_model_paths():
         print(f"Working with {opportunities_path}...")
@@ -24,8 +22,8 @@ def update_monitor():
         opportunities.append(op)
 
     print("Updating Monitor...")
-    with xlwings.App(visible=False) as app:
-        pipline_book = app.books.open(monitor_file_path)
+    with xlwings.App(visible=False) as f_app:
+        pipline_book = f_app.books.open(monitor_file_path)
         update_opportunities(pipline_book, opportunities)
         # update_holdings(pipline_book, opportunities)
         pipline_book.save(monitor_file_path)
@@ -47,11 +45,11 @@ def read_market(monitor_path, source):
 
     if source == "Free":
         us_riskfree = risk_free_rate("us")
-        print(us_riskfree)
+        # print(us_riskfree)
         cn_riskfree = risk_free_rate("cn")
-        print(cn_riskfree)
+        # print(cn_riskfree)
         hk_riskfree = get_hk_riskfree()
-        print(hk_riskfree)
+        # print(hk_riskfree)
 
     with xlwings.App(visible=False) as app:
         marco_book = app.books.open(monitor_path)
