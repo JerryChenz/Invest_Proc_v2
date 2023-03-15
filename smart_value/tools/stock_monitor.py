@@ -17,24 +17,52 @@ def update_monitor():
 
     # load and update the new valuation xlsx
     for opportunities_path in get_model_paths():
-        # load and update the new valuation xlsx
         print(f"Working with {opportunities_path}...")
-        op = read_opportunity(opportunities_path)
+        marco_rates = read_market(monitor_file_path, "Fred")
+        op = read_opportunity(opportunities_path, marco_rates)  # load and update the new valuation xlsx
         opportunities.append(op)
 
     print("Updating Monitor...")
     with xlwings.App(visible=False) as app:
         pipline_book = app.books.open(monitor_file_path)
         update_opportunities(pipline_book, opportunities)
-        # update_holdings(pipline_book, self.opportunities)
+        # update_holdings(pipline_book, opportunities)
         pipline_book.save(monitor_file_path)
         pipline_book.close()
 
 
-def read_opportunity(opportunities_path):
+def read_market(monitor_path, source):
+    """Update the Current_Holdings sheet in the Pipeline_monitor file.
+
+    :param source: the API option
+    :param monitor_path: path fo the Monitor excel
+    """
+
+    us_riskfree = 0.08
+    cn_riskfree = 0.06
+
+    if source == "Fred":
+        us_riskfree = risk_free_rate("us")
+        cn_riskfree = risk_free_rate("cn")
+
+    with xlwings.App(visible=False) as app:
+        marco_book = app.books.open(monitor_path)
+        macro_sheet = marco_book.sheets('Macro')
+        macro_sheet.range('D6').value = us_riskfree
+        macro_sheet.range('F6').value = cn_riskfree
+        us_mos = macro_sheet.range('D3').value
+        cn_mos = macro_sheet.range('F3').value
+        marco_book.save(monitor_file_path)
+        marco_book.close()
+
+    return [us_riskfree, cn_riskfree, us_mos, cn_mos]
+
+
+def read_opportunity(opportunities_path, marco_rates):
     """Read all the opportunities at the opportunities_path.
 
     :param opportunities_path: path of the model in the opportunities' folder
+    :param marco_rates: rates from the Marco page of the Monitor Excel
     :return: an Asset object
     """
 
@@ -45,9 +73,8 @@ def read_opportunity(opportunities_path):
         dash_sheet = xl_book.sheets('Dashboard')
 
         if r_stock.match(str(opportunities_path)):
-            # Update the models first in the opportunities folder
             company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
-            smart_value.tools.stock_model.update_dashboard(dash_sheet, company)
+            smart_value.tools.stock_model.update_dashboard(dash_sheet, company)  # Update
             xl_book.save(opportunities_path)  # xls must be saved to update the values
             op = MonitorStock(dash_sheet)  # the MonitorStock object representing a opportunity
         else:
@@ -144,21 +171,6 @@ def update_holdings(pipline_book, op_list):
 
     # Current Holdings
     holding_sheet.range('I2').value = datetime.today().strftime('%Y-%m-%d')
-
-
-def update_market(pipline_book):
-    """Update the Current_Holdings sheet in the Pipeline_monitor file.
-
-    :param pipline_book: xlwings book object
-    """
-
-    us_riskfree = risk_free_rate("us")
-    cn_riskfree = risk_free_rate("cn")
-
-    market_sheet = pipline_book.sheets('Macro')
-
-    market_sheet.range('D3').value = us_riskfree
-    market_sheet.range('F3').value = cn_riskfree
 
 
 class MonitorStock:

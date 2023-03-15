@@ -9,9 +9,9 @@ def risk_free_rate(country):
     :param country: us or cn
     :return: 10-year government bond yield"""
 
+    fred = Fred(api_key=fred_api_key)
+
     if country == 'cn':
-        pass
-        # Todo: China 10 Year Treasury Yield
+        return fred.get_series('INTDSRCNM193N')  # China Discount Rate
     else:
-        fred = Fred(api_key=fred_api_key)
         return fred.get_series('DGS10')  # US 10 Year Treasury Yield
