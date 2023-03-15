@@ -18,8 +18,8 @@ def update_monitor():
     # load and update the new valuation xlsx
     for opportunities_path in get_model_paths():
         print(f"Working with {opportunities_path}...")
-        marco_rates = read_market(monitor_file_path, "Fred")
-        op = read_opportunity(opportunities_path, marco_rates)  # load and update the new valuation xlsx
+        read_market(monitor_file_path, "Fred")
+        op = read_opportunity(opportunities_path)  # load and update the new valuation xlsx
         opportunities.append(op)
 
     print("Updating Monitor...")
@@ -54,8 +54,6 @@ def read_market(monitor_path, source):
         cn_mos = macro_sheet.range('F3').value
         marco_book.save(monitor_file_path)
         marco_book.close()
-
-    return [us_riskfree, cn_riskfree, us_mos, cn_mos]
 
 
 def read_opportunity(opportunities_path):
