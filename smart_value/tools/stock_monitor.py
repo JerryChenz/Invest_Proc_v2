@@ -58,11 +58,10 @@ def read_market(monitor_path, source):
     return [us_riskfree, cn_riskfree, us_mos, cn_mos]
 
 
-def read_opportunity(opportunities_path, marco_rates):
+def read_opportunity(opportunities_path):
     """Read all the opportunities at the opportunities_path.
 
     :param opportunities_path: path of the model in the opportunities' folder
-    :param marco_rates: rates from the Marco page of the Monitor Excel
     :return: an Asset object
     """
 

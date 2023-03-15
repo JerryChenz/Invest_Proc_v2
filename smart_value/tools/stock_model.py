@@ -7,6 +7,10 @@ import re
 from smart_value.stock import *
 from smart_value.financial_data import yf_data as yf
 from smart_value.financial_data import yq_data as yq
+from openpyxl import load_workbook
+
+models_folder_path = pathlib.Path.cwd().resolve() / 'financial_models' / 'Opportunities'
+monitor_file_path = models_folder_path / 'Monitor' / 'Monitor.xlsx'
 
 
 def new_stock_model(ticker, source):
@@ -84,6 +88,22 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     :param new_bool: False if there is a model exists, true otherwise
     """
 
+    # Marco data
+    monitor_wb = load_workbook(monitor_file_path, read_only=True)
+    macro_sheet = monitor_wb["Macro"]
+    us_mos = macro_sheet['D3']
+    cn_mos = macro_sheet['F3']
+    us_riskfree = macro_sheet['D6']
+    cn_riskfree = macro_sheet['F6']
+
+    if dash_sheet.range('C10').value == "US":
+        dash_sheet.range('D10').value = us_riskfree
+        dash_sheet.range('C16').value = us_mos
+    else:
+        dash_sheet.range('D10').value = cn_riskfree
+        dash_sheet.range('C16').value = cn_mos
+
+    # Stock data
     if new_bool:
         dash_sheet.range('C3').value = stock.symbol
         dash_sheet.range('C4').value = stock.name
