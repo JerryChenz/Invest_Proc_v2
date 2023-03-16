@@ -185,8 +185,8 @@ def update_holdings(pipline_book, op_list):
             holding_sheet.range((k, 12)).value = op.st_quick
             holding_sheet.range((k, 13)).value = op.lt_cash_debt
             holding_sheet.range((k, 14)).value = op.lt_quick
-            holding_sheet.range((k, 15)).value = f'={stock_mv}/D4'
-            holding_sheet.range((k, 16)).value = f'={op.price_hold}/{op.price}-1'
+            holding_sheet.range((k, 15)).value = f'=(D{k}*G{k})/$D$4'
+            holding_sheet.range((k, 16)).value = f'=D{k}/E{k}-1'
             holding_sheet.range((k, 17)).value = op.exchange
             holding_sheet.range((k, 18)).value = op.inv_category
             k += 1
