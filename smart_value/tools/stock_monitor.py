@@ -164,6 +164,9 @@ def update_holdings(pipline_book, op_list):
     holding_sheet = pipline_book.sheets('Current_Holdings')
     holding_sheet.range('B8:R200').clear_contents()
 
+    total_cost = 0
+    total_mv = 0
+
     k = 8
     for op in op_list:
         if op.hold:
@@ -174,19 +177,26 @@ def update_holdings(pipline_book, op_list):
             holding_sheet.range((k, 6)).value = op.price_currency
             holding_sheet.range((k, 7)).value = op.shares_hold
             holding_sheet.range((k, 8)).value = op.next_sell_price
+            stock_cost = float(op.price_hold) * float(op.shares_hold)
+            stock_mv = float(op.price) * float(op.shares_hold)
             holding_sheet.range((k, 9)).value = op.debt_ce
             holding_sheet.range((k, 10)).value = op.book_quick
             holding_sheet.range((k, 11)).value = op.st_cash_debt
             holding_sheet.range((k, 12)).value = op.st_quick
             holding_sheet.range((k, 13)).value = op.lt_cash_debt
             holding_sheet.range((k, 14)).value = op.lt_quick
-            # holding_sheet.range((k, 15)).value = op.
-            # holding_sheet.range((k, 16)).value = op.
+            holding_sheet.range((k, 15)).value = f'={stock_mv}/D4'
+            holding_sheet.range((k, 16)).value = f'={op.price_hold}/{op.price}-1'
             holding_sheet.range((k, 17)).value = op.exchange
             holding_sheet.range((k, 18)).value = op.inv_category
             k += 1
+            total_cost += stock_cost
+            total_mv += stock_mv
 
-    # Current Holdings
+    # Key summary
+    holding_sheet.range('D3').value = total_cost
+    holding_sheet.range('D4').value = total_mv
+    # today's date
     holding_sheet.range('F2').value = datetime.today().strftime('%Y-%m-%d')
     print("Current_holdings updated")
 
