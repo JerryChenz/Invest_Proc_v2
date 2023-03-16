@@ -214,7 +214,7 @@ class MonitorStock:
         self.next_review = dash_sheet.range('D6').value
         self.frd_dividend = dash_sheet.range('F16').value
         # Current holdings attributes
-        self.hold = dash_sheet.range('C26').value != ""
+        self.hold = dash_sheet.range('E26').value == "Action_Planning"
         self.shares_hold = dash_sheet.range('C28').value
         self.price_hold = dash_sheet.range('C29').value
         self.debt_ce = asset_sheet.range('I53').value
