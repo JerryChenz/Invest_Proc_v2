@@ -80,11 +80,12 @@ def read_opportunity(opportunities_path):
     with xlwings.App(visible=False) as app:
         xl_book = app.books.open(opportunities_path)
         dash_sheet = xl_book.sheets('Dashboard')
+        asset_sheet = xl_book.sheets('Asset_Model')
         if r_stock.match(str(opportunities_path)):
             company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
             smart_value.tools.stock_model.update_dashboard(dash_sheet, company)  # Update
             xl_book.save(opportunities_path)  # xls must be saved to update the values
-            op = MonitorStock(dash_sheet)  # the MonitorStock object representing an opportunity
+            op = MonitorStock(dash_sheet, asset_sheet)  # the MonitorStock object representing an opportunity
         else:
             print(f"'{opportunities_path}' is incorrect")
         xl_book.close()
@@ -127,7 +128,7 @@ def update_opportunities(pipline_book, op_list):
     """
 
     monitor_sheet = pipline_book.sheets('Opportunities')
-    monitor_sheet.range('B5:S200').clear_contents()
+    monitor_sheet.range('B5:S400').clear_contents()
 
     r = 5
     for op in op_list:
@@ -161,20 +162,28 @@ def update_holdings(pipline_book, op_list):
     """
 
     holding_sheet = pipline_book.sheets('Current_Holdings')
-    holding_sheet.range('B7:O200').clear_contents()
+    holding_sheet.range('B8:R200').clear_contents()
 
-    k = 7
+    k = 8
     for op in op_list:
-        if op.total_units:
+        if op.hold:
             holding_sheet.range((k, 2)).value = op.symbol
             holding_sheet.range((k, 3)).value = op.name
-            holding_sheet.range((k, 4)).value = op.exchange
-            holding_sheet.range((k, 5)).value = op.price_currency
-            holding_sheet.range((k, 6)).value = op.unit_cost
-            holding_sheet.range((k, 7)).value = op.total_units
-            holding_sheet.range((k, 8)).value = f'=F{k}*G{k}'
-            # holding_sheet.range((k, 9)).value =
-            # holding_sheet.range((k, 10)).value =
+            holding_sheet.range((k, 4)).value = op.price
+            holding_sheet.range((k, 5)).value = op.price_hold
+            holding_sheet.range((k, 6)).value = op.price_currency
+            holding_sheet.range((k, 7)).value = op.shares_hold
+            holding_sheet.range((k, 8)).value = op.next_sell_price
+            holding_sheet.range((k, 9)).value = op.debt_ce
+            holding_sheet.range((k, 10)).value = op.book_quick
+            holding_sheet.range((k, 11)).value = op.st_cash_debt
+            holding_sheet.range((k, 12)).value = op.st_quick
+            holding_sheet.range((k, 13)).value = op.lt_cash_debt
+            holding_sheet.range((k, 14)).value = op.lt_quick
+            # holding_sheet.range((k, 15)).value = op.
+            # holding_sheet.range((k, 16)).value = op.
+            holding_sheet.range((k, 17)).value = op.exchange
+            holding_sheet.range((k, 18)).value = op.inv_category
             k += 1
 
     # Current Holdings
@@ -184,7 +193,7 @@ def update_holdings(pipline_book, op_list):
 class MonitorStock:
     """Monitor class"""
 
-    def __init__(self, dash_sheet):
+    def __init__(self, dash_sheet, asset_sheet):
         self.symbol = dash_sheet.range('C3').value
         self.name = dash_sheet.range('C4').value
         self.exchange = dash_sheet.range('I3').value
@@ -203,3 +212,13 @@ class MonitorStock:
         self.lfy_date = dash_sheet.range('E6').value  # date of the last financial year-end
         self.next_review = dash_sheet.range('D6').value
         self.frd_dividend = dash_sheet.range('F16').value
+        # Current holdings attributes
+        self.hold = dash_sheet.range('C26').value != ""
+        self.shares_hold = dash_sheet.range('C28').value
+        self.price_hold = dash_sheet.range('C29').value
+        self.debt_ce = asset_sheet.range('I53').value
+        self.book_quick = asset_sheet.range('I7').value
+        self.st_cash_debt = asset_sheet.range('I24').value
+        self.st_quick = asset_sheet.range('I25').value
+        self.lt_cash_debt = asset_sheet.range('I44').value
+        self.lt_quick = asset_sheet.range('I45').value
