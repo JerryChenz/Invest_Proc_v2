@@ -28,7 +28,7 @@ def update_monitor():
     with xlwings.App(visible=False) as app:
         pipline_book = app.books.open(p_monitor_file_path)
         update_opportunities(pipline_book, opportunities)
-        # update_holdings(pipline_book, opportunities)
+        update_holdings(pipline_book, opportunities)
         pipline_book.save(p_monitor_file_path)
         pipline_book.close()
     print("Update completed")
@@ -187,7 +187,8 @@ def update_holdings(pipline_book, op_list):
             k += 1
 
     # Current Holdings
-    holding_sheet.range('I2').value = datetime.today().strftime('%Y-%m-%d')
+    holding_sheet.range('F2').value = datetime.today().strftime('%Y-%m-%d')
+    print("Current_holdings updated")
 
 
 class MonitorStock:
