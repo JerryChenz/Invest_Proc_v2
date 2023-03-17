@@ -138,18 +138,19 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 5)).value = op.price_currency
         monitor_sheet.range((r, 6)).value = op.current_excess_return
         monitor_sheet.range((r, 7)).value = op.frd_dividend
-        monitor_sheet.range((r, 8)).value = op.next_buy_price
-        monitor_sheet.range((r, 9)).value = op.next_buy_shares
-        monitor_sheet.range((r, 10)).value = op.next_sell_price
-        monitor_sheet.range((r, 11)).value = op.val_floor
-        monitor_sheet.range((r, 12)).value = op.val_ceil
-        monitor_sheet.range((r, 13)).value = op.fcf_value
-        monitor_sheet.range((r, 14)).value = op.breakeven_price
-        monitor_sheet.range((r, 15)).value = op.ideal_price
-        monitor_sheet.range((r, 16)).value = op.lfy_date
-        monitor_sheet.range((r, 17)).value = op.next_review
-        monitor_sheet.range((r, 18)).value = op.exchange
-        monitor_sheet.range((r, 19)).value = op.inv_category
+        monitor_sheet.range((r, 8)).value = f'=D{r}/I{r}-1'
+        monitor_sheet.range((r, 9)).value = op.next_buy_price
+        monitor_sheet.range((r, 10)).value = op.next_buy_shares
+        monitor_sheet.range((r, 11)).value = op.next_sell_price
+        monitor_sheet.range((r, 12)).value = op.val_floor
+        monitor_sheet.range((r, 13)).value = op.val_ceil
+        monitor_sheet.range((r, 14)).value = op.fcf_value
+        monitor_sheet.range((r, 15)).value = op.breakeven_price
+        monitor_sheet.range((r, 16)).value = op.ideal_price
+        monitor_sheet.range((r, 17)).value = op.lfy_date
+        monitor_sheet.range((r, 18)).value = op.next_review
+        monitor_sheet.range((r, 19)).value = op.exchange
+        monitor_sheet.range((r, 20)).value = op.inv_category
         r += 1
     print(f"Total {len(op_list)} opportunities Updated")
 
