@@ -74,8 +74,9 @@ def update_stock_model(ticker, model_name, model_path, new_bool, source):
     with xlwings.App(visible=False) as app:
         model_xl = app.books.open(model_path)
         update_dashboard(model_xl.sheets('Dashboard'), company, new_bool)
+        report_unit = update_data(model_xl.sheets('Data'), company)
         if new_bool:
-            update_data(model_xl.sheets('Data'), model_xl.sheets('Asset_Model'), company)
+            update_asset(model_xl.sheets('Asset_Model'), company, report_unit)
         model_xl.save(model_path)
         model_xl.close()
 
@@ -121,11 +122,10 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     dash_sheet.range('I12').value = stock.fx_rate
 
 
-def update_data(data_sheet, asset_sheet, stock):
+def update_data(data_sheet, stock):
     """Update the Data sheet.
 
     :param data_sheet: the xlwings object of Data
-    :param asset_sheet: the xlwings object of Asset_Model
     :param stock: the Stock object
     """
 
@@ -170,7 +170,7 @@ def update_data(data_sheet, asset_sheet, stock):
         data_sheet.range((37, k + 3)).value = int(-stock.cf_df.iloc[3, k] / report_unit)  # CashDividendsPaid
         data_sheet.range((38, k + 3)).value = int(-stock.cf_df.iloc[4, k] / report_unit)  # RepurchaseOfCapitalStock
 
-    update_asset(asset_sheet, stock, report_unit)
+    return report_unit
 
 
 def update_asset(dash_sheet, stock, report_unit):
