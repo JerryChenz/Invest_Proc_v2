@@ -247,7 +247,7 @@ class StockModel(Stock):
             elif self.source == "yq":
                 ticker_data = yq.YqData(self.symbol)
                 self.load_data(ticker_data)
-                self.fx_rate = yq.get_forex(self.report_currency, self.price[1])
+                self.fx_rate = yf.get_forex(self.report_currency, self.price[1])  # Use the better yfinance Forex
 
             elif self.source == "yq_quote":
                 quote = yq.get_quote(self.symbol)
@@ -255,7 +255,7 @@ class StockModel(Stock):
                 price_currency = quote[1]
                 report_currency = quote[2]
                 self.load_quote(market_price, price_currency, report_currency)
-                self.fx_rate = yq.get_forex(report_currency, price_currency)
+                self.fx_rate = yf.get_forex(report_currency, price_currency)  # Use the better yfinance Forex
 
             elif self.source == "fmp":
                 pass
