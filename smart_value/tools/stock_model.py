@@ -184,6 +184,10 @@ def update_asset(dash_sheet, stock, report_unit):
     dash_sheet.range('D3').value = stock.quarter_bs.iloc[7, 0] / report_unit  # total equity
     dash_sheet.range('I3').value = stock.quarter_bs.iloc[8, 0] / report_unit  # common equity
     dash_sheet.range('D9').value = stock.most_recent_quarter  # result date
+    if stock.most_recent_quarter == stock.last_fy:
+        dash_sheet.range('E9').value = "FY"
+    else:
+        dash_sheet.range('E9').value = "Quarter"
     dash_sheet.range('I26').value = stock.quarter_bs.iloc[2, 0] / report_unit  # current liabilities
     # Non-current liabilities = Total Asset - Total Equity - Current Liabilities
     dash_sheet.range('I42').value = (stock.quarter_bs.iloc[0, 0] - stock.quarter_bs.iloc[7, 0] -
