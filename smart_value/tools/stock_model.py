@@ -131,12 +131,15 @@ def update_data(data_sheet, stock):
 
     data_sheet.range('C3').value = stock.last_fy
     data_digits = len(str(int(stock.is_df.iloc[0, 0])))
+    # print(str(int(stock.is_df.iloc[0, 0])))
+    # print(data_digits)
     if data_digits <= 6:
         report_unit = 1
     elif data_digits <= 9:
         report_unit = 1000
     else:
-        report_unit = int((data_digits - 9) / 3 + 0.99) * 1000
+        report_unit = 1000 ** int((data_digits - 9) / 3 + 1)
+        # print(report_unit)
     data_sheet.range('C4').value = report_unit
 
     for i in range(len(stock.is_df.columns)):
