@@ -4,7 +4,6 @@ import pathlib
 import pandas as pd
 import time
 import random
-# from smart_value.tools.helpers import remove_files
 from smart_value.financial_data import yf_data as yf
 from smart_value.financial_data import yq_data as yq
 
@@ -97,25 +96,36 @@ def output_data():
     # Step 4: export the data
     export_data(merged_df)
 
-# Decommissioned code because the yahoo finance price updates are not efficient enough
-# def prepare_data(path, source):
-#     """prepare the data from json before cleaning
-#
-#     :param source: string data source selector
-#     :param path: path of the json file
-#     """
-#
-#     # prepare the data in batches to prevent abusing the API or crash
-#     data = pd.read_json(path)  # read data frame from json file
-#     if source == "yf":
-#         # print(data)
-#         data = yf.update_data(data)
-#     elif source == "yq":
-#         data = yq.update_data(data)
-#     else:
-#         data = data
-#     # print(data)
-#     return data
+
+def screener_result(screen_list, source):
+    """prepare the screened set of data
+
+    :param screen_list: list of string ticker code
+    :param source: string data source selector
+    """
+
+    s_result = {}
+
+    for symbol in screen_list:
+        ticker_data = None
+        if source == "yf":
+            ticker_data = yf.YfData(symbol)
+        elif source == "yq":
+            ticker_data = yq.YqData(symbol)
+        else:
+            pass
+
+        s_result[symbol]['name'] = ticker_data.name
+        s_result[symbol]['sector'] = ticker_data.sector
+        s_result[symbol]['price'] = ticker_data.price[0]
+        s_result[symbol]['price_currency'] = ticker_data.price[1]
+        s_result[symbol]['exchange'] = ticker_data.exchange
+        s_result[symbol]['shares'] = ticker_data.shares
+        s_result[symbol]['report_currency'] = ticker_data.report_currency
+        s_result[symbol]['last_dividend'] = ticker_data.last_dividend
+        s_result[symbol]['buyback'] = ticker_data.buyback
+
+    return s_result
 
 
 def export_data(df):
