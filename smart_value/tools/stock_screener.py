@@ -145,7 +145,7 @@ def screener_result(screen_list, source):
         s_result[symbol]['gross_margin'] = (sales - cogs) / sales
         s_result[symbol]['ebit'] = sales - cogs - op_exp
         s_result[symbol]['ebit_margin'] = (sales - cogs - op_exp) / sales
-        s_result[symbol]['earnings'] = ticker_data.is_df.iloc[4, 0]
+        s_result[symbol]['onwer_netincome'] = ticker_data.is_df.iloc[4, 0]
         current_assets = ticker_data.annual_bs.iloc[1, 0]
         current_liabilities = ticker_data.annual_bs.iloc[2, 0]
         cash_position = ticker_data.cf_df.iloc[5, 0]
@@ -159,17 +159,20 @@ def screener_result(screen_list, source):
         s_result[symbol]['debt_ratio'] = (st_debt + lt_debt) / common_equity
         s_result[symbol]['CommonStockEquity'] = common_equity
         s_result[symbol]['minority_interest'] = minority_interest
+        s_result[symbol]['cash'] = cash_position
 
     df_result = pd.DataFrame.from_dict(s_result).T
     cols = ['sector', 'name', 'price', 'price_currency', 'shares', '52WeekLow', '52WeekHigh', 'regularMarketVolume',
     'dividend', 'buyback', 'report_currency', 'fx_rate', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
-    'earnings', 'current_ratio', 'currentCash_ratio', 'debt_ratio', 'CommonStockEquity', 'minority_interest',
-    'total_debt', 'exchange']
+    'onwer_netincome', 'current_ratio', 'currentCash_ratio', 'debt_ratio', 'CommonStockEquity', 'minority_interest',
+    'total_debt', 'cash', 'exchange']
     df_result = df_result[cols]
     # additional information
     df_result['CAP'] = df_result['price'] * df_result['shares']
     df_result['PB'] = df_result['price'] / (df_result['CommonStockEquity'] * df_result['fx_rate'] / df_result['shares'])
-    df_result['EV'] = df_result['CAP'] + df_result['total_debt']
+    df_result['PE'] = df_result['price'] / (df_result['onwer_netincome'] * df_result['fx_rate'] / df_result['shares'])
+    df_result['EV'] = df_result['CAP'] + df_result['total_debt'] + df_result['minority_interest'] - df_result['cash']
+    df_result['ebit_EV'] = df_result['ebit'] / df_result['EV']
 
     df_result.to_csv(screener_folder / 'result.csv')
     return df_result
