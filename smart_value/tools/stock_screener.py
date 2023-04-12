@@ -108,6 +108,7 @@ def screener_result(screen_list, source):
     s_result = {}
 
     for symbol in screen_list:
+        print(f'Processing {symbol}')
         s_result[symbol] = {}
         ticker_data = None
         if source == "yf":
@@ -115,13 +116,13 @@ def screener_result(screen_list, source):
             # not fully finished for yf source
         elif source == "yq":
             ticker_data = yq.YqData(symbol)
-            s_result[symbol]['fiftyTwoWeekLow'] = Ticker(symbol).summary_detail[symbol]['fiftyTwoWeekLow']
-            s_result[symbol]['fiftyTwoWeekHigh'] = Ticker(symbol).summary_detail[symbol]['fiftyTwoWeekHigh']
-            s_result[symbol]['trailingPE'] = Ticker(symbol).summary_detail[symbol]['trailingPE']
+            s_result[symbol]['52WeekLow'] = Ticker(symbol).summary_detail[symbol]['fiftyTwoWeekLow']
+            s_result[symbol]['52WeekHigh'] = Ticker(symbol).summary_detail[symbol]['fiftyTwoWeekHigh']
             s_result[symbol]['regularMarketVolume'] = Ticker(symbol).summary_detail[symbol]['regularMarketVolume']
         else:
             pass  # to be implemented for other data sources
 
+        s_result[symbol]['name'] = ticker_data.name
         s_result[symbol]['sector'] = ticker_data.sector
         s_result[symbol]['price'] = ticker_data.price[0]
         s_result[symbol]['price_currency'] = ticker_data.price[1]
@@ -139,21 +140,24 @@ def screener_result(screen_list, source):
         s_result[symbol]['ebit'] = sales - cogs - op_exp
         s_result[symbol]['ebit_margin'] = (sales - cogs - op_exp) / sales
         s_result[symbol]['earnings'] = ticker_data.is_df.iloc[4, 0]
-        s_result[symbol]['CurrentAssets'] = ticker_data.annual_bs.iloc[1, 0]
-        s_result[symbol]['CurrentLiabilities'] = ticker_data.annual_bs.iloc[2, 0]
-        s_result[symbol]['CurrentCapitalLeaseObligation'] = ticker_data.annual_bs.iloc[3, 0]
-        s_result[symbol]['LongTermCapitalLeaseObligation'] = ticker_data.annual_bs.iloc[4, 0]
-        s_result[symbol]['CommonStockEquity'] = ticker_data.annual_bs.iloc[8, 0]
-        s_result[symbol]['EndCashPosition'] = ticker_data.cf_df.iloc[5, 0]
+        current_assets = ticker_data.annual_bs.iloc[1, 0]
+        current_liabilities = ticker_data.annual_bs.iloc[2, 0]
+        cash_position = ticker_data.cf_df.iloc[5, 0]
+        st_debt = ticker_data.annual_bs.iloc[3, 0]
+        lt_debt = ticker_data.annual_bs.iloc[5, 0]
+        common_equity = ticker_data.annual_bs.iloc[8, 0]
+        s_result[symbol]['current_ratio'] = current_assets / current_liabilities
+        s_result[symbol]['currentCash_ratio'] = cash_position / current_liabilities
+        s_result[symbol]['debt_ratio'] = (st_debt + lt_debt) / common_equity
+        s_result[symbol]['CommonStockEquity'] = common_equity
 
     df_result = pd.DataFrame.from_dict(s_result).T
-    cols = ['price', 'price_currency', 'fiftyTwoWeekLow', 'fiftyTwoWeekHigh',
-    'regularMarketVolume', 'trailingPE', 'dividend', 'buyback', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
-    'earnings', 'CurrentAssets', 'CurrentLiabilities', 'CurrentCapitalLeaseObligation',
-    'LongTermCapitalLeaseObligation', 'CommonStockEquity', 'EndCashPosition', 'sector', 'exchange']
+    cols = ['sector', 'name', 'price', 'price_currency', '52WeekLow', '52WeekHigh',
+    'regularMarketVolume', 'dividend', 'buyback', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
+    'earnings', 'current_ratio', 'currentCash_ratio', 'debt_ratio', 'CommonStockEquity', 'exchange']
     df_result = df_result[cols]
 
-    df_result.to_csv(screener_folder / 'screener_result.csv')
+    df_result.to_csv(screener_folder / 'result.csv')
     return df_result
 
 
