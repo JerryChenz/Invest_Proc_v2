@@ -115,7 +115,7 @@ def screener_result(screen_list, source):
         else:
             pass
 
-        s_result[symbol]['name'] = ticker_data.name
+        s_result[symbol] = {}
         s_result[symbol]['sector'] = ticker_data.sector
         s_result[symbol]['price'] = ticker_data.price[0]
         s_result[symbol]['price_currency'] = ticker_data.price[1]
@@ -124,8 +124,21 @@ def screener_result(screen_list, source):
         s_result[symbol]['report_currency'] = ticker_data.report_currency
         s_result[symbol]['last_dividend'] = ticker_data.last_dividend
         s_result[symbol]['buyback'] = ticker_data.buyback
+        sales = ticker_data.is_df.iloc[0, 0]
+        cogs = ticker_data.is_df.iloc[1, 0]
+        op_exp = ticker_data.is_df.iloc[2, 0]
+        s_result[symbol]['ebit'] = sales - cogs - op_exp
+        s_result[symbol]['earnings'] = ticker_data.is_df.iloc[4, 0]
+        s_result[symbol]['CurrentAssets'] = ticker_data.annual_bs.iloc[1, 0]
+        s_result[symbol]['CurrentLiabilities'] = ticker_data.annual_bs.iloc[2, 0]
+        s_result[symbol]['CurrentCapitalLeaseObligation'] = ticker_data.annual_bs.iloc[3, 0]
+        s_result[symbol]['LongTermCapitalLeaseObligation'] = ticker_data.annual_bs.iloc[4, 0]
+        s_result[symbol]['CommonStockEquity'] = ticker_data.annual_bs.iloc[8, 0]
+        s_result[symbol]['EndCashPosition'] = ticker_data.cf_df.iloc[5, 0]
+        s_result[symbol]['CashDividendsPaid'] = ticker_data.cf_df.iloc[3, 0]
+        s_result[symbol]['RepurchaseOfCapitalStock'] = ticker_data.cf_df.iloc[4, 0]
 
-    return s_result
+    return pd.DataFrame.from_dict(s_result).T
 
 
 def export_data(df):
