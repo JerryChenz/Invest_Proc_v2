@@ -125,10 +125,16 @@ def screener_result(screen_list, source):
         s_result[symbol]['name'] = ticker_data.name
         s_result[symbol]['sector'] = ticker_data.sector
         s_result[symbol]['price'] = ticker_data.price[0]
-        s_result[symbol]['price_currency'] = ticker_data.price[1]
+        price_currency = ticker_data.price[1]
+        report_currency = ticker_data.report_currency
+        s_result[symbol]['price_currency'] = price_currency
         s_result[symbol]['exchange'] = ticker_data.exchange
         s_result[symbol]['shares'] = ticker_data.shares
-        s_result[symbol]['report_currency'] = ticker_data.report_currency
+        s_result[symbol]['report_currency'] = report_currency
+        if report_currency == price_currency:
+            s_result[symbol]['fx_rate'] = 1
+        else:
+            s_result[symbol]['fx_rate'] = yf.get_forex(report_currency, price_currency)
         s_result[symbol]['dividend'] = ticker_data.last_dividend
         s_result[symbol]['buyback'] = ticker_data.buyback
         sales = ticker_data.is_df.iloc[0, 0]
@@ -146,16 +152,24 @@ def screener_result(screen_list, source):
         st_debt = ticker_data.annual_bs.iloc[3, 0]
         lt_debt = ticker_data.annual_bs.iloc[5, 0]
         common_equity = ticker_data.annual_bs.iloc[8, 0]
+        minority_interest = ticker_data.annual_bs.iloc[7, 0] - common_equity
+        s_result[symbol]['total_debt'] = st_debt + lt_debt
         s_result[symbol]['current_ratio'] = current_assets / current_liabilities
         s_result[symbol]['currentCash_ratio'] = cash_position / current_liabilities
         s_result[symbol]['debt_ratio'] = (st_debt + lt_debt) / common_equity
         s_result[symbol]['CommonStockEquity'] = common_equity
+        s_result[symbol]['minority_interest'] = minority_interest
 
     df_result = pd.DataFrame.from_dict(s_result).T
-    cols = ['sector', 'name', 'price', 'price_currency', 'shares', '52WeekLow', '52WeekHigh',
-    'regularMarketVolume', 'dividend', 'buyback', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
-    'earnings', 'current_ratio', 'currentCash_ratio', 'debt_ratio', 'CommonStockEquity', 'exchange']
+    cols = ['sector', 'name', 'price', 'price_currency', 'shares', '52WeekLow', '52WeekHigh', 'regularMarketVolume',
+    'dividend', 'buyback', 'report_currency', 'fx_rate', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
+    'earnings', 'current_ratio', 'currentCash_ratio', 'debt_ratio', 'CommonStockEquity', 'minority_interest',
+    'total_debt', 'exchange']
     df_result = df_result[cols]
+    # additional information
+    df_result['CAP'] = df_result['price'] * df_result['shares']
+    df_result['PB'] = df_result['price'] / (df_result['CommonStockEquity'] * df_result['fx_rate'] / df_result['shares'])
+    df_result['EV'] = df_result['CAP'] + df_result['total_debt']
 
     df_result.to_csv(screener_folder / 'result.csv')
     return df_result
