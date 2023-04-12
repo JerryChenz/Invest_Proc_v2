@@ -6,6 +6,7 @@ import time
 import random
 from smart_value.financial_data import yf_data as yf
 from smart_value.financial_data import yq_data as yq
+from yahooquery import Ticker
 
 '''
 Two ways to create a screener:
@@ -107,27 +108,36 @@ def screener_result(screen_list, source):
     s_result = {}
 
     for symbol in screen_list:
+        s_result[symbol] = {}
         ticker_data = None
         if source == "yf":
             ticker_data = yf.YfData(symbol)
+            # not fully finished for yf source
         elif source == "yq":
             ticker_data = yq.YqData(symbol)
+            s_result[symbol]['fiftyTwoWeekLow'] = Ticker(symbol).summary_detail[symbol]['fiftyTwoWeekLow']
+            s_result[symbol]['fiftyTwoWeekHigh'] = Ticker(symbol).summary_detail[symbol]['fiftyTwoWeekHigh']
+            s_result[symbol]['trailingPE'] = Ticker(symbol).summary_detail[symbol]['trailingPE']
+            s_result[symbol]['regularMarketVolume'] = Ticker(symbol).summary_detail[symbol]['regularMarketVolume']
         else:
-            pass
+            pass  # to be implemented for other data sources
 
-        s_result[symbol] = {}
         s_result[symbol]['sector'] = ticker_data.sector
         s_result[symbol]['price'] = ticker_data.price[0]
         s_result[symbol]['price_currency'] = ticker_data.price[1]
         s_result[symbol]['exchange'] = ticker_data.exchange
         s_result[symbol]['shares'] = ticker_data.shares
         s_result[symbol]['report_currency'] = ticker_data.report_currency
-        s_result[symbol]['last_dividend'] = ticker_data.last_dividend
+        s_result[symbol]['dividend'] = ticker_data.last_dividend
         s_result[symbol]['buyback'] = ticker_data.buyback
         sales = ticker_data.is_df.iloc[0, 0]
+        sales_1 = ticker_data.is_df.iloc[0, 1]
         cogs = ticker_data.is_df.iloc[1, 0]
         op_exp = ticker_data.is_df.iloc[2, 0]
+        s_result[symbol]['sales_growth'] = sales/sales_1 - 1
+        s_result[symbol]['gross_margin'] = (sales - cogs) / sales
         s_result[symbol]['ebit'] = sales - cogs - op_exp
+        s_result[symbol]['ebit_margin'] = (sales - cogs - op_exp) / sales
         s_result[symbol]['earnings'] = ticker_data.is_df.iloc[4, 0]
         s_result[symbol]['CurrentAssets'] = ticker_data.annual_bs.iloc[1, 0]
         s_result[symbol]['CurrentLiabilities'] = ticker_data.annual_bs.iloc[2, 0]
@@ -135,10 +145,16 @@ def screener_result(screen_list, source):
         s_result[symbol]['LongTermCapitalLeaseObligation'] = ticker_data.annual_bs.iloc[4, 0]
         s_result[symbol]['CommonStockEquity'] = ticker_data.annual_bs.iloc[8, 0]
         s_result[symbol]['EndCashPosition'] = ticker_data.cf_df.iloc[5, 0]
-        s_result[symbol]['CashDividendsPaid'] = ticker_data.cf_df.iloc[3, 0]
-        s_result[symbol]['RepurchaseOfCapitalStock'] = ticker_data.cf_df.iloc[4, 0]
 
-    return pd.DataFrame.from_dict(s_result).T
+    df_result = pd.DataFrame.from_dict(s_result).T
+    cols = ['price', 'price_currency', 'fiftyTwoWeekLow', 'fiftyTwoWeekHigh',
+    'regularMarketVolume', 'trailingPE', 'dividend', 'buyback', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
+    'earnings', 'CurrentAssets', 'CurrentLiabilities', 'CurrentCapitalLeaseObligation',
+    'LongTermCapitalLeaseObligation', 'CommonStockEquity', 'EndCashPosition', 'sector', 'exchange']
+    df_result = df_result[cols]
+
+    df_result.to_csv(screener_folder / 'screener_result.csv')
+    return df_result
 
 
 def export_data(df):
