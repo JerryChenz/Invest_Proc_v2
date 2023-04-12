@@ -152,7 +152,7 @@ def screener_result(screen_list, source):
         s_result[symbol]['CommonStockEquity'] = common_equity
 
     df_result = pd.DataFrame.from_dict(s_result).T
-    cols = ['sector', 'name', 'price', 'price_currency', '52WeekLow', '52WeekHigh',
+    cols = ['sector', 'name', 'price', 'price_currency', 'shares', '52WeekLow', '52WeekHigh',
     'regularMarketVolume', 'dividend', 'buyback', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
     'earnings', 'current_ratio', 'currentCash_ratio', 'debt_ratio', 'CommonStockEquity', 'exchange']
     df_result = df_result[cols]
