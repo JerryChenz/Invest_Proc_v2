@@ -174,7 +174,7 @@ def screener_result(screen_list, source):
     df_result['EV'] = df_result['CAP'] + df_result['total_debt'] + df_result['minority_interest'] - df_result['cash']
     df_result['ebit_EV'] = df_result['ebit'] / df_result['EV']
 
-    df_result.to_csv(screener_folder / 'result.csv')
+    df_result.to_csv(screener_folder / 'screen_result.csv')
     return df_result
 
 
