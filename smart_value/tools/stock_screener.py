@@ -107,9 +107,11 @@ def screener_result(screen_list, source, prefix="screen"):
     """
 
     s_result = {}
+    i = 1
+    total = len(screen_list)
 
     for symbol in screen_list:
-        print(f'Processing {symbol}')
+        print(f'Processing {symbol}, {total-i} left...')
         s_result[symbol] = {}
         ticker_data = None
         if source == "yf":
@@ -177,6 +179,7 @@ def screener_result(screen_list, source, prefix="screen"):
     df_result['ebit_EV'] = df_result['ebit'] / df_result['EV']
 
     df_result.to_csv(screener_folder / f'{prefix}_result.csv')
+    i += 1
     return df_result
 
 
