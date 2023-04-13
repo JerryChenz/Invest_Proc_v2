@@ -165,11 +165,10 @@ def screener_result(screen_list, source, prefix="screen"):
         s_result[symbol]['cash'] = cash_position
 
     df_result = pd.DataFrame.from_dict(s_result).T
-    cols = ['sector', 'name', 'price', 'price_currency', 'shares', '52WeekLow', '52WeekHigh', 'regularMarketVolume',
-            'dividend', 'buyback', 'report_currency', 'fx_rate', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
+    cols = ['sector', 'name', 'price', 'price_currency', 'shares', '52WeekLow', '52WeekHigh', 'dividend',
+            'buyback', 'report_currency', 'fx_rate', 'ebit', 'sales_growth', 'gross_margin', 'ebit_margin',
             'onwer_netincome', 'current_ratio', 'currentCash_ratio', 'debt_ratio', 'CommonStockEquity',
-            'minority_interest',
-            'total_debt', 'cash', 'exchange']
+            'minority_interest', 'total_debt', 'cash', 'exchange', 'regularMarketVolume']
     df_result = df_result[cols]
     # additional information
     df_result['CAP'] = df_result['price'] * df_result['shares']
