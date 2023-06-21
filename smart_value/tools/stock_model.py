@@ -102,13 +102,13 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
 
     if dash_sheet.range('C10').value == "US":
         dash_sheet.range('D10').value = us_riskfree
-        dash_sheet.range('C16').value = us_mos
+        dash_sheet.range('C17').value = us_mos
     elif dash_sheet.range('C10').value == "CN":
         dash_sheet.range('D10').value = cn_riskfree
-        dash_sheet.range('C16').value = cn_mos
+        dash_sheet.range('C17').value = cn_mos
     else:
         dash_sheet.range('D10').value = hk_riskfree
-        dash_sheet.range('C16').value = hk_mos
+        dash_sheet.range('C17').value = hk_mos
 
     # Stock data
     if new_bool:
