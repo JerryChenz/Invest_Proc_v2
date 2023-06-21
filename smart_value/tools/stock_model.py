@@ -134,19 +134,13 @@ def update_data(data_sheet, stock):
     data_digits = len(str(int(stock.is_df.iloc[0, 0])))
     # print(str(int(stock.is_df.iloc[0, 0])))
     # print(data_digits)
-    extra_digits = (data_digits - 9) / 3
-    if data_digits <= 9 and int(stock.is_df.iloc[0, 0]) % 1000 == 0:
+    if 13 > data_digits >= 7:
         report_unit = 1000
+    elif data_digits >= 13:
+        report_unit = 1000000
     else:
-        if data_digits > 6:
-            if int(stock.is_df.iloc[0, 0]) % (extra_digits + 1) == 0:
-                report_unit = 1000 ** int(extra_digits + 1)
-            elif int(stock.is_df.iloc[0, 0]) % 1000 == 0:
-                report_unit = 1000
-            else:
-                report_unit = 1
-        else:
-            report_unit = 1
+        report_unit = 1
+
     data_sheet.range('C4').value = report_unit
 
     for i in range(len(stock.is_df.columns)):
