@@ -141,16 +141,14 @@ def update_opportunities(pipline_book, op_list):
         monitor_sheet.range((r, 8)).value = f'=D{r}/I{r}-1'
         monitor_sheet.range((r, 9)).value = op.next_buy_price
         monitor_sheet.range((r, 10)).value = op.next_buy_shares
-        monitor_sheet.range((r, 11)).value = op.next_sell_price
-        monitor_sheet.range((r, 12)).value = op.val_floor
-        monitor_sheet.range((r, 13)).value = op.val_ceil
-        monitor_sheet.range((r, 14)).value = op.fcf_value
-        monitor_sheet.range((r, 15)).value = op.breakeven_price
-        monitor_sheet.range((r, 16)).value = op.ideal_price
-        monitor_sheet.range((r, 17)).value = op.lfy_date
-        monitor_sheet.range((r, 18)).value = op.next_review
-        monitor_sheet.range((r, 19)).value = op.exchange
-        monitor_sheet.range((r, 20)).value = op.inv_category
+        monitor_sheet.range((r, 11)).value = op.exp_exit_price
+        monitor_sheet.range((r, 12)).value = op.worst_case_price
+        monitor_sheet.range((r, 13)).value = op.exp_value
+        monitor_sheet.range((r, 14)).value = op.breakeven_price
+        monitor_sheet.range((r, 15)).value = op.lfy_date
+        monitor_sheet.range((r, 16)).value = op.next_review
+        monitor_sheet.range((r, 17)).value = op.exchange
+        monitor_sheet.range((r, 18)).value = op.inv_category
         r += 1
     print(f"Total {len(op_list)} opportunities Updated")
 
@@ -177,7 +175,7 @@ def update_holdings(pipline_book, op_list):
             holding_sheet.range((k, 5)).value = op.price_hold
             holding_sheet.range((k, 6)).value = op.price_currency
             holding_sheet.range((k, 7)).value = op.shares_hold
-            holding_sheet.range((k, 8)).value = op.next_sell_price
+            holding_sheet.range((k, 8)).value = op.exp_exit_price
             stock_cost = float(op.price_hold) * float(op.shares_hold)
             stock_mv = float(op.price) * float(op.shares_hold)
             holding_sheet.range((k, 9)).value = op.debt_ce
@@ -213,17 +211,15 @@ class MonitorStock:
         self.price = dash_sheet.range('I4').value
         self.price_currency = dash_sheet.range('J4').value
         self.current_excess_return = dash_sheet.range('D16').value
-        self.val_floor = dash_sheet.range('D14').value
-        self.val_ceil = dash_sheet.range('F14').value
-        self.fcf_value = dash_sheet.range('H14').value
+        self.exp_value = dash_sheet.range('E14').value
         self.breakeven_price = dash_sheet.range('B17').value
         self.next_buy_price = dash_sheet.range('C35').value
         self.next_buy_shares = dash_sheet.range('C36').value
-        self.next_sell_price = dash_sheet.range('I35').value
-        self.ideal_price = dash_sheet.range('J25').value
+        self.exp_exit_price = dash_sheet.range('I35').value
+        self.worst_case_price = dash_sheet.range('I36').value
         self.lfy_date = dash_sheet.range('E6').value  # date of the last financial year-end
         self.next_review = dash_sheet.range('D6').value
-        self.frd_dividend = dash_sheet.range('F16').value
+        self.frd_dividend = dash_sheet.range('I16').value
         # Current holdings attributes
         self.hold = dash_sheet.range('E26').value == "Action_Planning"
         self.shares_hold = dash_sheet.range('C28').value
