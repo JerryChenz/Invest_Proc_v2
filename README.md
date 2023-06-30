@@ -14,6 +14,8 @@ Summary
 ![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_8.png)
 ![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_9.png)
 ![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_10.png)
+![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_11.png)
+![](https://github.com/JerryChenz/Invest_Proc_Open/blob/main/screenshoots/Invest_Proc_Summary_12.png)
 
 Workflow
 =========================
