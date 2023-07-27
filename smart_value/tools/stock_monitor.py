@@ -213,20 +213,20 @@ class MonitorStock:
         self.current_excess_return = dash_sheet.range('D16').value
         self.exp_value = dash_sheet.range('E14').value
         self.breakeven_price = dash_sheet.range('B17').value
-        self.next_buy_price = dash_sheet.range('C35').value
-        if dash_sheet.range('E26').value == "Action_Planning":
-            self.next_buy_shares = dash_sheet.range('E28').value
+        self.next_buy_price = dash_sheet.range('C37').value
+        if dash_sheet.range('E28').value == "Action_Planning":
+            self.next_buy_shares = dash_sheet.range('E30').value
         else:
-            self.next_buy_shares = dash_sheet.range('C28').value
-        self.exp_exit_price = dash_sheet.range('I35').value
-        self.worst_case_price = dash_sheet.range('I36').value
+            self.next_buy_shares = dash_sheet.range('C30').value
+        self.exp_exit_price = dash_sheet.range('I37').value
+        self.worst_case_price = dash_sheet.range('I38').value
         self.lfy_date = dash_sheet.range('E6').value  # date of the last financial year-end
         self.next_review = dash_sheet.range('D6').value
         self.frd_dividend = dash_sheet.range('J16').value
         # Current holdings attributes
-        self.hold = dash_sheet.range('E26').value == "Action_Planning"
-        self.shares_hold = dash_sheet.range('C28').value
-        self.price_hold = dash_sheet.range('C29').value
+        self.hold = dash_sheet.range('E28').value == "Action_Planning"
+        self.shares_hold = dash_sheet.range('C30').value
+        self.price_hold = dash_sheet.range('C31').value
         self.debt_ce = asset_sheet.range('I53').value
         self.book_quick = asset_sheet.range('I7').value
         self.st_cash_debt = asset_sheet.range('I24').value
