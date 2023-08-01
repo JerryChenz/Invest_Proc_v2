@@ -95,6 +95,9 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
     us_mos = macro_sheet['D3'].value
     cn_mos = macro_sheet['F3'].value
     hk_mos = macro_sheet['H3'].value
+    us_target = macro_sheet['D10'].value
+    cn_target = macro_sheet['F10'].value
+    hk_target = macro_sheet['H10'].value
     us_riskfree = macro_sheet['D6'].value
     cn_riskfree = macro_sheet['F6'].value
     hk_riskfree = macro_sheet['H6'].value
@@ -102,13 +105,16 @@ def update_dashboard(dash_sheet, stock, new_bool=False):
 
     if dash_sheet.range('C10').value == "US":
         dash_sheet.range('D10').value = us_riskfree
-        dash_sheet.range('C16').value = us_mos
+        dash_sheet.range('I14').value = us_mos
+        dash_sheet.range('C16').value = us_target
     elif dash_sheet.range('C10').value == "CN":
         dash_sheet.range('D10').value = cn_riskfree
-        dash_sheet.range('C16').value = cn_mos
+        dash_sheet.range('I14').value = cn_mos
+        dash_sheet.range('C16').value = cn_target
     else:
         dash_sheet.range('D10').value = hk_riskfree
-        dash_sheet.range('C16').value = hk_mos
+        dash_sheet.range('I14').value = hk_mos
+        dash_sheet.range('C16').value = hk_target
 
     # Stock data
     if new_bool:
