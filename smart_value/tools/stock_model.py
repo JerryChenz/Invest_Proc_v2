@@ -159,26 +159,27 @@ def update_data(data_sheet, stock):
 
     for j in range(len(stock.annual_bs.columns)):
         # load balance sheet
-        data_sheet.range((21, j + 3)).value = int(stock.annual_bs.iloc[1, j] / report_unit)  # CurrentAssets
-        data_sheet.range((22, j + 3)).value = int(stock.annual_bs.iloc[2, j] / report_unit)  # CurrentLiabilities
+        data_sheet.range((21, j + 3)).value = int(stock.annual_bs.iloc[0, j] / report_unit)  # TotalAssets
+        data_sheet.range((22, j + 3)).value = int(stock.annual_bs.iloc[1, j] / report_unit)  # CurrentAssets
+        data_sheet.range((23, j + 3)).value = int(stock.annual_bs.iloc[2, j] / report_unit)  # CurrentLiabilities
         # ST Interest-bearing Debt = CurrentDebtAndCapitalLeaseObligation
-        data_sheet.range((23, j + 3)).value = int(stock.annual_bs.iloc[3, j] / report_unit)
+        data_sheet.range((24, j + 3)).value = int(stock.annual_bs.iloc[3, j] / report_unit)
         # CurrentCapitalLeaseObligation
-        data_sheet.range((24, j + 3)).value = int(stock.annual_bs.iloc[4, j] / report_unit)
+        data_sheet.range((25, j + 3)).value = int(stock.annual_bs.iloc[4, j] / report_unit)
         # LT Interest-bearing Debt = LongTermDebtAndCapitalLeaseObligation
-        data_sheet.range((25, j + 3)).value = int(stock.annual_bs.iloc[5, j] / report_unit)
+        data_sheet.range((26, j + 3)).value = int(stock.annual_bs.iloc[5, j] / report_unit)
         # LongTermCapitalLeaseObligation
-        data_sheet.range((26, j + 3)).value = int(stock.annual_bs.iloc[6, j] / report_unit)
+        data_sheet.range((27, j + 3)).value = int(stock.annual_bs.iloc[6, j] / report_unit)
         # TotalEquityAndMinorityInterest
-        data_sheet.range((28, j + 3)).value = int(stock.annual_bs.iloc[7, j] / report_unit)
-        data_sheet.range((29, j + 3)).value = int(stock.annual_bs.iloc[8, j] / report_unit)  # CommonStockEquity
-        data_sheet.range((30, j + 3)).value = int(stock.annual_bs.iloc[14, j] / report_unit)  # NetPPE
+        data_sheet.range((29, j + 3)).value = int(stock.annual_bs.iloc[7, j] / report_unit)
+        data_sheet.range((30, j + 3)).value = int(stock.annual_bs.iloc[8, j] / report_unit)  # CommonStockEquity
+        data_sheet.range((31, j + 3)).value = int(stock.annual_bs.iloc[14, j] / report_unit)  # NetPPE
 
     for k in range(len(stock.cf_df.columns)):
         # Cash flow statement
-        data_sheet.range((31, k + 3)).value = int(stock.cf_df.iloc[5, k] / report_unit)  # EndCashPosition
-        data_sheet.range((37, k + 3)).value = int(-stock.cf_df.iloc[3, k] / report_unit)  # CashDividendsPaid
-        data_sheet.range((38, k + 3)).value = int(-stock.cf_df.iloc[4, k] / report_unit)  # RepurchaseOfCapitalStock
+        data_sheet.range((32, k + 3)).value = int(stock.cf_df.iloc[5, k] / report_unit)  # EndCashPosition
+        data_sheet.range((40, k + 3)).value = int(-stock.cf_df.iloc[3, k] / report_unit)  # CashDividendsPaid
+        data_sheet.range((41, k + 3)).value = int(-stock.cf_df.iloc[4, k] / report_unit)  # RepurchaseOfCapitalStock
 
     return report_unit
 
