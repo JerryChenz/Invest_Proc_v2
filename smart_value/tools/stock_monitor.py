@@ -11,8 +11,11 @@ p_monitor_file_path = models_folder_path / 'Monitor' / 'Portfolio_Monitor.xlsx'
 m_monitor_file_path = models_folder_path / 'Monitor' / 'Macro_Monitor.xlsx'
 
 
-def update_monitor():
-    """Update the Monitor file"""
+def update_monitor(quick=False):
+    """Update the Monitor file
+
+    :param quick: the option to  update the monitor sheet without updating the valuations
+    """
 
     opportunities = []
 
@@ -21,7 +24,7 @@ def update_monitor():
     # load and update the new valuation xlsx
     for opportunities_path in get_model_paths():
         print(f"Working with {opportunities_path}...")
-        op = read_opportunity(opportunities_path)  # load and update the new valuation xlsx
+        op = read_opportunity(opportunities_path, quick)  # load and update the new valuation xlsx
         opportunities.append(op)
 
     print("Updating Monitor...")
@@ -68,10 +71,11 @@ def update_marco(monitor_path, source):
     print("Finished Marco data Update")
 
 
-def read_opportunity(opportunities_path):
+def read_opportunity(opportunities_path, quick=False):
     """Read all the opportunities at the opportunities_path.
 
     :param opportunities_path: path of the model in the opportunities' folder
+    :param quick: the option to skip updating the valuations
     :return: an Asset object
     """
 
@@ -82,9 +86,10 @@ def read_opportunity(opportunities_path):
         dash_sheet = xl_book.sheets('Dashboard')
         asset_sheet = xl_book.sheets('Asset_Model')
         if r_stock.match(str(opportunities_path)):
-            company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
-            smart_value.tools.stock_model.update_dashboard(dash_sheet, company)  # Update
-            xl_book.save(opportunities_path)  # xls must be saved to update the values
+            if quick is True:
+                company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
+                smart_value.tools.stock_model.update_dashboard(dash_sheet, company)  # Update
+                xl_book.save(opportunities_path)  # xls must be saved to update the values
             op = MonitorStock(dash_sheet, asset_sheet)  # the MonitorStock object representing an opportunity
         else:
             print(f"'{opportunities_path}' is incorrect")
