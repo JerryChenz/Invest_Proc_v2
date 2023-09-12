@@ -29,7 +29,6 @@ def days_between(d1, d2):
 
 
 if __name__ == '__main__':
-    stare_list = ['9959.HK']
-    for s in stare_list:
-        gen_val_xlsx(s, "yq")
-        # update_val_xlsx(s, "yq")
+    stock = input("Please enter the ticker symbol: ")
+    # print(f"Creating/Updating the model for {stock}...")
+    gen_val_xlsx(stock, "yq")
