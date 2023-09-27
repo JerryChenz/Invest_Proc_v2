@@ -86,10 +86,10 @@ def read_opportunity(opportunities_path, quick=False):
         dash_sheet = xl_book.sheets('Dashboard')
         asset_sheet = xl_book.sheets('Asset_Model')
         if r_stock.match(str(opportunities_path)):
-            if quick is True:
-                company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
+            company = smart_value.tools.stock_model.StockModel(dash_sheet.range('C3').value, "yq_quote")
+            if quick is False:
                 smart_value.tools.stock_model.update_dashboard(dash_sheet, company)  # Update
-                xl_book.save(opportunities_path)  # xls must be saved to update the values
+            xl_book.save(opportunities_path)  # xls must be saved to update the values
             op = MonitorStock(dash_sheet, asset_sheet)  # the MonitorStock object representing an opportunity
         else:
             print(f"'{opportunities_path}' is incorrect")
