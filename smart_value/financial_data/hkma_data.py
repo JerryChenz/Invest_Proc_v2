@@ -1,6 +1,8 @@
 import urllib.request
 import json
+import ssl
 
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def get_hk_riskfree():
     treasury_url = 'https://api.hkma.gov.hk/public/market-data-and-statistics/monthly-statistical-bulletin/gov-bond' \
