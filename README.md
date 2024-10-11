@@ -1,4 +1,4 @@
-Invest_Proc
+Invest_Proc v2.0
 =========================
 Public equity Investment Management tool for potential opportunities and current holdings.
 
